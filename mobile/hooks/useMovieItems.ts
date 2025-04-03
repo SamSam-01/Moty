@@ -3,6 +3,7 @@ import { useAppContext } from '../context/AppContext';
 import { Movie } from '../types';
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
+import { TMDBMovie, movieApi } from '../services/api/movieApi';
 
 export function useMovieItems(listId: string) {
   const { getMovies, addMovie, updateMovie, deleteMovie, reorderMovies } = useAppContext();
@@ -10,6 +11,7 @@ export function useMovieItems(listId: string) {
   const [isLoading, setIsLoading] = useState(true);
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [currentMovie, setCurrentMovie] = useState<Movie | null>(null);
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
@@ -40,6 +42,10 @@ export function useMovieItems(listId: string) {
     setIsCreating(true);
   };
 
+  const openSearchModal = () => {
+    setIsSearching(true);
+  };
+
   const openEditModal = (movie: Movie) => {
     setCurrentMovie(movie);
     setTitle(movie.title);
@@ -52,6 +58,7 @@ export function useMovieItems(listId: string) {
   const closeModals = () => {
     setIsCreating(false);
     setIsEditing(false);
+    setIsSearching(false);
     setCurrentMovie(null);
     setTitle('');
     setNotes('');
@@ -95,6 +102,26 @@ export function useMovieItems(listId: string) {
       closeModals();
     } catch (error) {
       setFormError('Failed to create movie');
+    }
+  };
+
+  const handleSelectTMDBMovie = async (tmdbMovie: TMDBMovie) => {
+    try {
+      // Obtenir les détails complets du film
+      const movieDetails = await movieApi.getMovieDetails(tmdbMovie.id);
+      
+      // Convertir en format Movie pour notre app
+      const appMovie = movieApi.convertToAppMovie(
+        movieDetails, 
+        movies.length + 1
+      );
+      
+      // Ajouter le film à la liste
+      await addMovie(listId, appMovie);
+      await loadMovies();
+      closeModals();
+    } catch (error) {
+      Alert.alert('Error', 'Failed to add movie from TMDB');
     }
   };
 
@@ -171,6 +198,7 @@ export function useMovieItems(listId: string) {
     isLoading,
     isCreating,
     isEditing,
+    isSearching,
     currentMovie,
     title,
     setTitle,
@@ -179,10 +207,12 @@ export function useMovieItems(listId: string) {
     imageUrl,
     formError,
     openCreateModal,
+    openSearchModal,
     openEditModal,
     closeModals,
     pickImage,
     handleCreateMovie,
+    handleSelectTMDBMovie,
     handleUpdateMovie,
     handleDeleteMovie,
     handleReorderMovies,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
@@ -6,13 +6,15 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Plus } from 'lucide-react-native';
+import { ArrowLeft, Plus, Search } from 'lucide-react-native';
 import { BlurView } from 'expo-blur';
 import { useMovieItems } from '../../hooks/useMovieItems';
 import MovieItem from '../../components/movie/MovieItem';
 import MovieFormModal from '../../components/movie/MovieFormModal';
+import MovieSearch from '../../components/movie/MovieSearch';
 
 export default function ListDetailScreen() {
   const { id, title } = useLocalSearchParams<{ id: string; title: string }>();
@@ -22,6 +24,7 @@ export default function ListDetailScreen() {
     isLoading,
     isCreating,
     isEditing,
+    isSearching,
     currentMovie,
     title: movieTitle,
     setTitle: setMovieTitle,
@@ -30,10 +33,12 @@ export default function ListDetailScreen() {
     imageUrl,
     formError,
     openCreateModal,
+    openSearchModal,
     openEditModal,
     closeModals,
     pickImage,
     handleCreateMovie,
+    handleSelectTMDBMovie,
     handleUpdateMovie,
     handleDeleteMovie,
     handleReorderMovies,
@@ -91,12 +96,20 @@ export default function ListDetailScreen() {
           />
         )}
 
-        <TouchableOpacity
-          style={styles.addButton}
-          onPress={openCreateModal}
-        >
-          <Plus color="#fff" size={24} />
-        </TouchableOpacity>
+        <View style={styles.fabContainer}>
+          <TouchableOpacity
+            style={[styles.addButton, styles.searchButton]}
+            onPress={openSearchModal}
+          >
+            <Search color="#fff" size={24} />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.addButton}
+            onPress={openCreateModal}
+          >
+            <Plus color="#fff" size={24} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       {/* Create New Movie Modal */}
@@ -129,6 +142,21 @@ export default function ListDetailScreen() {
         onPickImage={pickImage}
         isEditing
       />
+
+      {/* Search Movie Modal */}
+      {isSearching && (
+        <Modal
+          animationType="slide"
+          transparent={false}
+          visible={isSearching}
+          onRequestClose={closeModals}
+        >
+          <MovieSearch 
+            onSelectMovie={handleSelectTMDBMovie}
+            onClose={closeModals}
+          />
+        </Modal>
+      )}
     </View>
   );
 }
@@ -190,10 +218,13 @@ const styles = StyleSheet.create({
     color: 'rgba(255, 255, 255, 0.6)',
     textAlign: 'center',
   },
-  addButton: {
+  fabContainer: {
     position: 'absolute',
     bottom: 24,
     right: 24,
+    flexDirection: 'column',
+  },
+  addButton: {
     width: 60,
     height: 60,
     borderRadius: 30,
@@ -208,10 +239,12 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 8,
     elevation: 5,
+    marginTop: 16,
+  },
+  searchButton: {
+    backgroundColor: '#4CAF50',
   },
   loader: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });

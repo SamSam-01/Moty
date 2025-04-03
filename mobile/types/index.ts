@@ -11,4 +11,10 @@ export interface Movie {
   rank: number;
   imageUrl?: string;
   notes?: string;
+  // Nouvelles propriétés TMDB
+  tmdbId?: string;
+  releaseDate?: string;
+  voteAverage?: number;
+  backdropUrl?: string;
+  genres?: { id: number; name: string }[];
 }
