@@ -9,7 +9,6 @@ export function useFrameworkReady() {
   useEffect(() => {
     async function prepare() {
       try {
-        // Pre-load fonts, make any API calls you need to do here
         await new Promise(resolve => setTimeout(resolve, 500));
       } catch (e) {
         console.warn(e);

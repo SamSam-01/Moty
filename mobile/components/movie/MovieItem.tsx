@@ -82,10 +82,30 @@ export default function MovieItem({
           />
         )}
         
+        
         <View style={styles.contentContainer}>
           <Text style={styles.titleText} numberOfLines={2}>
             {item.title}
           </Text>
+          
+          {/* Afficher la date de sortie et la note si disponibles */}
+          {(item.releaseDate || item.voteAverage) && (
+            <View style={styles.metaContainer}>
+              {item.releaseDate && (
+                <Text style={styles.metaText}>
+                  {new Date(item.releaseDate).getFullYear()}
+                </Text>
+              )}
+              {item.voteAverage && (
+                <View style={styles.ratingContainer}>
+                  <Text style={styles.ratingText}>
+                    ★ {item.voteAverage.toFixed(1)}
+                  </Text>
+                </View>
+              )}
+            </View>
+          )}
+          
           {item.notes && (
             <Text style={styles.notesText} numberOfLines={1}>
               {item.notes}
@@ -186,5 +206,27 @@ const styles = StyleSheet.create({
   },
   deleteButton: {
     backgroundColor: 'rgba(255, 59, 48, 0.7)',
+  },
+  
+  metaContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  metaText: {
+    fontSize: 12,
+    color: 'rgba(255, 255, 255, 0.6)',
+    marginRight: 8,
+  },
+  ratingContainer: {
+    backgroundColor: 'rgba(255, 193, 7, 0.2)',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+  },
+  ratingText: {
+    fontSize: 12,
+    color: '#FFC107',
+    fontWeight: '600',
   },
 });

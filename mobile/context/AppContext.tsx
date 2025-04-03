@@ -129,7 +129,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     try {
       setError(null);
       const updatedMovies = await movieService.reorderMovies(listId, movies);
-      return updatedMovies; // Retourner les films mis à jour
+      return updatedMovies;
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to reorder movies');
       throw e;
