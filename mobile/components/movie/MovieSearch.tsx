@@ -52,7 +52,7 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Search for a movie</Text> {/* Changed from French */}
+        <Text style={styles.title}>Search for a movie</Text>
         <TouchableOpacity onPress={onClose} style={styles.closeButton}>
           <X color="#fff" size={24} />
         </TouchableOpacity>
@@ -62,7 +62,7 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
         style={styles.searchInput}
         value={query}
         onChangeText={setQuery}
-        placeholder="Movie title..." /* Changed from French */
+        placeholder="Movie title..."
         placeholderTextColor={COLORS.placeholder}
         autoFocus
       />
@@ -97,7 +97,7 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
                   </Text>
                 )}
                 <Text style={styles.overview} numberOfLines={2}>
-                  {item.overview || 'No description available'} {/* Changed from French */}
+                  {item.overview || 'No description available'}
                 </Text>
               </View>
             </TouchableOpacity>
