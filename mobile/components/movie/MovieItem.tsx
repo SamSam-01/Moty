@@ -8,29 +8,22 @@ import Animated, {
 } from 'react-native-reanimated';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import { Edit2, Trash2 } from 'lucide-react-native';
+import { Movie } from '../../types';
 
-interface RankingItem {
-  id: string;
-  title: string;
-  rank: number;
-  imageUrl?: string;
-  notes?: string;
-}
-
-interface DraggableItemProps {
-  item: RankingItem;
+interface MovieItemProps {
+  item: Movie;
   index: number;
   onDragEnd: (fromIndex: number, toIndex: number) => void;
   itemCount: number;
   medalEmoji?: string | null;
-  onEdit?: (item: RankingItem) => void;
+  onEdit?: (item: Movie) => void;
   onDelete?: (itemId: string) => void;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const ITEM_HEIGHT = 90;
 
-export default function DraggableItem({
+export default function MovieItem({
   item,
   index,
   onDragEnd,
@@ -38,7 +31,7 @@ export default function DraggableItem({
   medalEmoji,
   onEdit,
   onDelete,
-}: DraggableItemProps) {
+}: MovieItemProps) {
   const translateY = useSharedValue(0);
   const isActive = useSharedValue(false);
 

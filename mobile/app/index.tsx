@@ -1,166 +1,113 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Modal,
-  TextInput,
-  Alert,
-  Platform,
-  Dimensions,
-  BlurView,
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withSpring,
-  runOnJS,
-} from 'react-native-reanimated';
+import { router } from 'expo-router';
 import { Plus } from 'lucide-react-native';
-import DraggableItem from '../components/DraggableItem';
+import { BlurView } from 'expo-blur';
+import { useMovieLists } from '../hooks/useMovieLists';
+import ListCard from '../components/list/ListCard';
+import ListFormModal from '../components/list/ListFormModal';
 
-interface RankingItem {
-  id: string;
-  title: string;
-  rank: number;
-}
+export default function HomeScreen() {
+  const {
+    lists,
+    isCreating,
+    isEditing,
+    currentList,
+    title,
+    setTitle,
+    imageUrl,
+    formError,
+    openCreateModal,
+    openEditModal,
+    closeModals,
+    pickImage,
+    handleCreateList,
+    handleUpdateList,
+    handleDeleteList,
+  } = useMovieLists();
 
-const STORAGE_KEY = '@ranking_items';
-const { width: SCREEN_WIDTH } = Dimensions.get('window');
-
-export default function RankingList() {
-  const [items, setItems] = useState<RankingItem[]>([]);
-  const [modalVisible, setModalVisible] = useState(false);
-  const [newItemTitle, setNewItemTitle] = useState('');
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    loadItems();
-  }, []);
-
-  const loadItems = async () => {
-    try {
-      const savedItems = await AsyncStorage.getItem(STORAGE_KEY);
-      if (savedItems) {
-        setItems(JSON.parse(savedItems));
-      }
-    } catch (e) {
-      setError('Failed to load items');
-      Alert.alert('Error', 'Failed to load your ranking list');
-    }
-  };
-
-  const saveItems = async (newItems: RankingItem[]) => {
-    try {
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(newItems));
-    } catch (e) {
-      setError('Failed to save items');
-      Alert.alert('Error', 'Failed to save your changes');
-    }
-  };
-
-  const addNewItem = async () => {
-    if (!newItemTitle.trim()) {
-      setError('Title cannot be empty');
-      return;
-    }
-
-    const newItem: RankingItem = {
-      id: Date.now().toString(),
-      title: newItemTitle.trim(),
-      rank: items.length + 1,
-    };
-
-    const newItems = [...items, newItem];
-    setItems(newItems);
-    await saveItems(newItems);
-    setModalVisible(false);
-    setNewItemTitle('');
-    setError(null);
-  };
-
-  const updateItemOrder = async (fromIndex: number, toIndex: number) => {
-    const newItems = [...items];
-    const [movedItem] = newItems.splice(fromIndex, 1);
-    newItems.splice(toIndex, 0, movedItem);
-
-    const updatedItems = newItems.map((item, index) => ({
-      ...item,
-      rank: index + 1,
-    }));
-
-    setItems(updatedItems);
-    await saveItems(updatedItems);
+  const navigateToList = (listId: string, listTitle: string) => {
+    router.push({
+      pathname: '/list/[id]',
+      params: { id: listId, title: listTitle }
+    });
   };
 
   return (
     <View style={styles.container}>
-      <View style={styles.glassBackground}>
-        <View style={styles.listContainer}>
-          {items.map((item, index) => (
-            <DraggableItem
-              key={item.id}
-              item={item}
-              index={index}
-              onDragEnd={updateItemOrder}
-              itemCount={items.length}
-            />
-          ))}
-        </View>
+      <BlurView intensity={20} style={styles.header}>
+        <Text style={styles.headerTitle}>My Movie Rankings</Text>
+      </BlurView>
+      
+      <View style={styles.content}>
+        {lists.length === 0 ? (
+          <View style={styles.emptyState}>
+            <Text style={styles.emptyStateText}>
+              You don't have any movie lists yet.
+            </Text>
+            <Text style={styles.emptyStateSubtext}>
+              Create your first list to start ranking movies!
+            </Text>
+          </View>
+        ) : (
+          <FlatList
+            data={lists}
+            renderItem={({ item }) => (
+              <ListCard
+                list={item}
+                onPress={navigateToList}
+                onEdit={openEditModal}
+                onDelete={handleDeleteList}
+              />
+            )}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={styles.listContainer}
+            numColumns={2}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
 
         <TouchableOpacity
           style={styles.addButton}
-          onPress={() => setModalVisible(true)}
+          onPress={openCreateModal}
         >
           <Plus color="#fff" size={24} />
-          <Text style={styles.addButtonText}>Add New Item</Text>
         </TouchableOpacity>
       </View>
 
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add New Item</Text>
-            <TextInput
-              style={styles.input}
-              value={newItemTitle}
-              onChangeText={setNewItemTitle}
-              placeholder="Enter item title"
-              placeholderTextColor="#a0a0a0"
-              autoFocus
-            />
-            {error && <Text style={styles.errorText}>{error}</Text>}
-            <View style={styles.modalButtons}>
-              <TouchableOpacity
-                style={[styles.button, styles.cancelButton]}
-                onPress={() => {
-                  setModalVisible(false);
-                  setNewItemTitle('');
-                  setError(null);
-                }}
-              >
-                <Text style={styles.buttonText}>Cancel</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.button, styles.addItemButton]}
-                onPress={addNewItem}
-              >
-                <Text style={[styles.buttonText, styles.addItemButtonText]}>
-                  Add Item
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      </Modal>
+      {/* Create New List Modal */}
+      <ListFormModal
+        visible={isCreating}
+        title="Create New List"
+        value={title}
+        imageUrl={imageUrl}
+        error={formError}
+        onChangeText={setTitle}
+        onSubmit={handleCreateList}
+        onCancel={closeModals}
+        onPickImage={pickImage}
+      />
+
+      {/* Edit List Modal */}
+      <ListFormModal
+        visible={isEditing}
+        title="Edit List"
+        value={title}
+        imageUrl={imageUrl}
+        error={formError}
+        onChangeText={setTitle}
+        onSubmit={handleUpdateList}
+        onCancel={closeModals}
+        onPickImage={pickImage}
+        isEditing
+      />
     </View>
   );
 }
@@ -168,107 +115,61 @@ export default function RankingList() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#1a1a1a',
-    padding: 16,
+    backgroundColor: '#121212',
   },
-  glassBackground: {
-    flex: 1,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 24,
-    overflow: 'hidden',
-    backdropFilter: 'blur(10px)',
-    padding: 16,
+  header: {
+    paddingTop: 60,
+    paddingBottom: 16,
+    backgroundColor: 'rgba(18, 18, 18, 0.8)',
   },
-  addButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: 'rgba(0, 122, 255, 0.8)',
-    padding: 16,
-    borderRadius: 16,
-    marginTop: 'auto',
-    width: '100%',
-    backdropFilter: 'blur(10px)',
-  },
-  addButtonText: {
+  headerTitle: {
+    fontSize: 28,
+    fontWeight: '700',
     color: '#fff',
-    fontSize: 18,
-    fontWeight: '600',
-    marginLeft: 12,
+    textAlign: 'center',
+  },
+  content: {
+    flex: 1,
+    padding: 16,
   },
   listContainer: {
-    flex: 1,
-    width: '100%',
-    maxWidth: SCREEN_WIDTH - 64,
-    alignSelf: 'center',
+    paddingBottom: 80,
   },
-  modalContainer: {
+  emptyState: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
-    backdropFilter: 'blur(10px)',
+    paddingHorizontal: 32,
   },
-  modalContent: {
-    backgroundColor: 'rgba(255, 255, 255, 0.95)',
-    borderRadius: 24,
-    padding: 24,
-    width: '90%',
-    maxWidth: 400,
+  emptyStateText: {
+    fontSize: 20,
+    fontWeight: '600',
+    color: '#fff',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  emptyStateSubtext: {
+    fontSize: 16,
+    color: 'rgba(255, 255, 255, 0.6)',
+    textAlign: 'center',
+  },
+  addButton: {
+    position: 'absolute',
+    bottom: 24,
+    right: 24,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: '#0A84FF',
+    justifyContent: 'center',
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 4,
     },
     shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 20,
-    color: '#1a1a1a',
-    textAlign: 'center',
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.1)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    fontSize: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
-    color: '#1a1a1a',
-  },
-  modalButtons: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  button: {
-    padding: 16,
-    borderRadius: 12,
-    flex: 1,
-    alignItems: 'center',
-    marginHorizontal: 6,
-  },
-  cancelButton: {
-    backgroundColor: 'rgba(0, 0, 0, 0.05)',
-  },
-  addItemButton: {
-    backgroundColor: 'rgba(0, 122, 255, 0.9)',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#1a1a1a',
-  },
-  addItemButtonText: {
-    color: '#fff',
-  },
-  errorText: {
-    color: '#FF3B30',
-    marginBottom: 16,
-    textAlign: 'center',
+    shadowRadius: 8,
+    elevation: 5,
   },
 });
