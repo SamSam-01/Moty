@@ -150,7 +150,13 @@ export function useMovieItems(listId: string) {
     const [movedItem] = reorderedMovies.splice(fromIndex, 1);
     reorderedMovies.splice(toIndex, 0, movedItem);
     
-    setMovies(reorderedMovies);
+    // Mettre à jour immédiatement l'état local avec les films réordonnés
+    const updatedMovies = reorderedMovies.map((movie, index) => ({
+      ...movie,
+      rank: index + 1
+    }));
+    
+    setMovies(updatedMovies);
     
     try {
       await reorderMovies(listId, reorderedMovies);

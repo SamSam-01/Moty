@@ -128,7 +128,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const reorderMovies = async (listId: string, movies: Movie[]) => {
     try {
       setError(null);
-      await movieService.reorderMovies(listId, movies);
+      const updatedMovies = await movieService.reorderMovies(listId, movies);
+      return updatedMovies; // Retourner les films mis à jour
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to reorder movies');
       throw e;
