@@ -1,8 +1,9 @@
 import axios from 'axios';
 import { Movie } from '../../types';
 
-// Change this line - using localhost won't work on a physical device
-// const API_URL = 'http://localhost:3000/api';
+// Change the API_URL to Vercel deployment URL when deployed
+// const API_URL = 'https://moty-server.vercel.app/api';
+// For development, you can keep using localhost
 
 // Use your computer's local network IP address instead
 const API_URL = 'http://192.168.1.17:3000/api'; // Replace X with your actual IP
