@@ -6,7 +6,7 @@ import { Movie } from '../../types';
 // For development, you can keep using localhost
 
 // Use your computer's local network IP address instead
-const API_URL = 'http://192.168.1.17:3000/api'; // Replace X with your actual IP
+const API_URL = 'http://localhost:3000/api'; // Replace X with your actual IP
 
 export interface TMDBMovie {
   id: number;
