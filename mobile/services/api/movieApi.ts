@@ -1,12 +1,12 @@
 import axios from 'axios';
 import { Movie } from '../../types';
+import Constants from 'expo-constants';
 
-// Change the API_URL to Vercel deployment URL when deployed
-// const API_URL = 'https://moty-server.vercel.app/api';
-// For development, you can keep using localhost
-
-// Use your computer's local network IP address instead
-const API_URL = 'http://localhost:3000/api'; // Replace X with your actual IP
+// Variables d'environnement via expo-constants ou process.env
+const TMDB_API_KEY = Constants.expoConfig?.extra?.TMDB_API_KEY || process.env.TMDB_API_KEY;
+const TMDB_API_URL = 'https://api.themoviedb.org/3';
+const LANGUAGE = 'fr-FR';
+const IMAGE_BASE_URL = 'https://image.tmdb.org/t/p';
 
 export interface TMDBMovie {
   id: number;
@@ -19,30 +19,71 @@ export interface TMDBMovie {
   genres?: { id: number; name: string }[];
 }
 
+/**
+ * Service pour interroger directement l'API TMDB
+ */
 export const movieApi = {
+  /**
+   * Recherche de films par mot-clé
+   */
   async searchMovies(query: string): Promise<TMDBMovie[]> {
     try {
-      const response = await axios.get(`${API_URL}/movies/search`, {
-        params: { q: query }
+      const response = await axios.get(`${TMDB_API_URL}/search/movie`, {
+        params: {
+          api_key: TMDB_API_KEY,
+          language: LANGUAGE,
+          query,
+          include_adult: false,
+        },
       });
-      return response.data;
+
+      return response.data.results.map((movie: any) => ({
+        id: movie.id,
+        title: movie.title,
+        overview: movie.overview,
+        releaseDate: movie.release_date,
+        posterUrl: movie.poster_path ? `${IMAGE_BASE_URL}/w500${movie.poster_path}` : '',
+        backdropUrl: movie.backdrop_path ? `${IMAGE_BASE_URL}/w780${movie.backdrop_path}` : '',
+        voteAverage: movie.vote_average,
+        genres: movie.genre_ids?.map((id: number) => ({ id, name: '' })), // noms de genres vides si non récupérés
+      }));
     } catch (error) {
       console.error('Error searching movies:', error);
       throw new Error('Failed to search movies');
     }
   },
 
+  /**
+   * Détails d'un film par ID
+   */
   async getMovieDetails(movieId: number): Promise<TMDBMovie> {
     try {
-      const response = await axios.get(`${API_URL}/movies/${movieId}`);
-      return response.data;
+      const response = await axios.get(`${TMDB_API_URL}/movie/${movieId}`, {
+        params: {
+          api_key: TMDB_API_KEY,
+          language: LANGUAGE,
+        },
+      });
+      const movie = response.data;
+      return {
+        id: movie.id,
+        title: movie.title,
+        overview: movie.overview,
+        releaseDate: movie.release_date,
+        posterUrl: movie.poster_path ? `${IMAGE_BASE_URL}/w500${movie.poster_path}` : '',
+        backdropUrl: movie.backdrop_path ? `${IMAGE_BASE_URL}/w780${movie.backdrop_path}` : '',
+        voteAverage: movie.vote_average,
+        genres: movie.genres,
+      };
     } catch (error) {
       console.error('Error getting movie details:', error);
       throw new Error('Failed to get movie details');
     }
   },
 
-  // Convertir un film TMDB en format Movie pour notre application
+  /**
+   * Conversion d'un film TMDB vers le format interne de l'application
+   */
   convertToAppMovie(tmdbMovie: TMDBMovie, rank: number): Omit<Movie, 'id'> {
     return {
       title: tmdbMovie.title,
@@ -53,5 +94,5 @@ export const movieApi = {
       releaseDate: tmdbMovie.releaseDate,
       voteAverage: tmdbMovie.voteAverage,
     };
-  }
+  },
 };
