@@ -9,6 +9,7 @@ import {
   Image,
   TouchableWithoutFeedback,
   Keyboard,
+  Platform,
 } from 'react-native';
 
 interface ListFormModalProps {
@@ -36,21 +37,12 @@ export default function ListFormModal({
   onPickImage,
   isEditing = false,
 }: ListFormModalProps) {
-  return (
-    <Modal
-      animationType="slide"
-      transparent={true}
-      visible={visible}
-      onRequestClose={() => {
-        Keyboard.dismiss();
-        onCancel();
-      }}
-    >
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.modalContainer}>
+  if (Platform.OS === 'web') {
+    return (
+      visible ? (
+        <View style={[styles.modalContainer, {position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, zIndex: 9999}]}> 
           <View style={styles.modalContent}>
             <Text style={styles.modalTitle}>{title}</Text>
-            
             <TouchableOpacity 
               style={styles.imagePickerContainer}
               onPress={onPickImage}
@@ -66,7 +58,65 @@ export default function ListFormModal({
                 </View>
               )}
             </TouchableOpacity>
-            
+            <TextInput
+              style={styles.input}
+              value={value}
+              onChangeText={onChangeText}
+              placeholder="Enter list title (e.g., 2025 Movies)"
+              placeholderTextColor="#a0a0a0"
+              autoFocus
+            />
+            {error && <Text style={styles.errorText}>{error}</Text>}
+            <View style={styles.modalButtons}>
+              <TouchableOpacity
+                style={[styles.button, styles.cancelButton]}
+                onPress={onCancel}
+              >
+                <Text style={styles.buttonText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.button, styles.submitButton]}
+                onPress={onSubmit}
+              >
+                <Text style={[styles.buttonText, styles.submitButtonText]}>
+                  {isEditing ? 'Update' : 'Create List'}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      ) : null
+    );
+  }
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={visible}
+      onRequestClose={() => {
+        Keyboard.dismiss();
+        onCancel();
+      }}
+    >
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>{title}</Text>
+            <TouchableOpacity 
+              style={styles.imagePickerContainer}
+              onPress={onPickImage}
+            >
+              {imageUrl ? (
+                <Image 
+                  source={{ uri: imageUrl }} 
+                  style={styles.previewImage}
+                />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <Text style={styles.imagePlaceholderText}>Tap to add cover image</Text>
+                </View>
+              )}
+            </TouchableOpacity>
             <TextInput
               style={styles.input}
               value={value}
