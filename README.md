@@ -31,18 +31,3 @@ Mobile App Setup:
 - 📱 Android Emulator: Press a
 - 🌐 Web Browser: Press w
 
-🎯 Fonctionnalités principales
-
-✅ V1 (MVP)
-
-Connexion et inscription via email (Firebase Auth)
-
-Ajout de films depuis TheMovieDB
-
-Classement des films avec drag and drop
-
-Notation des films (1 à 5 étoiles)
-
-Page publique des classements utilisateurs
-
-Base de données Firebase pour stocker les films
