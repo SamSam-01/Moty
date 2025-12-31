@@ -1,51 +1,55 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { MovieList } from '../../types';
 
-const LISTS_STORAGE_KEY = '@movie_lists';
+import { supabase } from '../../lib/supabase';
+import { MovieList } from '../../types';
 
 export const listService = {
   async getLists(): Promise<MovieList[]> {
-    try {
-      const savedLists = await AsyncStorage.getItem(LISTS_STORAGE_KEY);
-      if (savedLists) {
-        return JSON.parse(savedLists);
-      }
-      return [];
-    } catch (e) {
-      console.error('Failed to load lists', e);
-      throw new Error('Failed to load movie lists');
+    const { data, error } = await supabase
+      .from('lists')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching lists:', error);
+      throw new Error(error.message);
     }
+
+    return data.map((item: any) => ({
+      id: item.id.toString(),
+      title: item.name,
+      createdAt: new Date(item.created_at).getTime(),
+    }));
   },
 
-  async saveLists(lists: MovieList[]): Promise<void> {
-    try {
-      await AsyncStorage.setItem(LISTS_STORAGE_KEY, JSON.stringify(lists));
-    } catch (e) {
-      console.error('Failed to save lists', e);
-      throw new Error('Failed to save your changes');
-    }
+  async addList(title: string): Promise<void> {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('User not logged in');
+
+    const { error } = await supabase
+      .from('lists')
+      .insert({
+        name: title,
+        user_id: user.id,
+      });
+
+    if (error) throw new Error(error.message);
   },
 
-  async addList(list: MovieList): Promise<MovieList[]> {
-    const lists = await this.getLists();
-    const newLists = [...lists, list];
-    await this.saveLists(newLists);
-    return newLists;
+  async updateList(id: string, title: string): Promise<void> {
+    const { error } = await supabase
+      .from('lists')
+      .update({ name: title })
+      .eq('id', id);
+
+    if (error) throw new Error(error.message);
   },
 
-  async updateList(updatedList: MovieList): Promise<MovieList[]> {
-    const lists = await this.getLists();
-    const newLists = lists.map(list => 
-      list.id === updatedList.id ? updatedList : list
-    );
-    await this.saveLists(newLists);
-    return newLists;
-  },
+  async deleteList(id: string): Promise<void> {
+    const { error } = await supabase
+      .from('lists')
+      .delete()
+      .eq('id', id);
 
-  async deleteList(listId: string): Promise<MovieList[]> {
-    const lists = await this.getLists();
-    const newLists = lists.filter(list => list.id !== listId);
-    await this.saveLists(newLists);
-    return newLists;
+    if (error) throw new Error(error.message);
   }
 };

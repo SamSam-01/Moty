@@ -68,19 +68,19 @@ export function useMovieItems(listId: string) {
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (status !== 'granted') {
       Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to make this work!');
       return;
     }
-  
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [1, 1],
       quality: 0.8,
     });
-  
+
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setImageUrl(result.assets[0].uri);
     }
@@ -109,13 +109,13 @@ export function useMovieItems(listId: string) {
     try {
       // Obtenir les détails complets du film
       const movieDetails = await movieApi.getMovieDetails(tmdbMovie.id);
-      
+
       // Convertir en format Movie pour notre app
       const appMovie = movieApi.convertToAppMovie(
-        movieDetails, 
+        movieDetails,
         movies.length + 1
       );
-      
+
       // Ajouter le film à la liste
       await addMovie(listId, appMovie);
       await loadMovies();
@@ -127,7 +127,7 @@ export function useMovieItems(listId: string) {
 
   const handleUpdateMovie = async () => {
     if (!currentMovie) return;
-    
+
     if (!title.trim()) {
       setFormError('Title cannot be empty');
       return;
@@ -172,19 +172,26 @@ export function useMovieItems(listId: string) {
     );
   };
 
-  const handleReorderMovies = async (fromIndex: number, toIndex: number) => {
-    const reorderedMovies = [...movies];
-    const [movedItem] = reorderedMovies.splice(fromIndex, 1);
-    reorderedMovies.splice(toIndex, 0, movedItem);
-    
+  const handleReorderMovies = async (fromIndex: number, toIndex: number, newData?: Movie[]) => {
+    let reorderedMovies = [...movies];
+
+    if (newData) {
+      reorderedMovies = newData;
+    } else {
+      // Fallback for manual reordering if needed (though we use DraggableFlatList now)
+      const [movedItem] = reorderedMovies.splice(fromIndex, 1);
+      reorderedMovies.splice(toIndex, 0, movedItem);
+    }
+
     // Mettre à jour immédiatement l'état local avec les films réordonnés
+    // Update local state immediately with reordered movies
     const updatedMovies = reorderedMovies.map((movie, index) => ({
       ...movie,
       rank: index + 1
     }));
-    
+
     setMovies(updatedMovies);
-    
+
     try {
       await reorderMovies(listId, reorderedMovies);
     } catch (error) {
