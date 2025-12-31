@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import {
   View,
@@ -8,10 +9,14 @@ import {
   TouchableOpacity,
   Image,
   ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import { movieApi, TMDBMovie } from '../../services/api/movieApi';
-import { COLORS } from '../../constants';
-import { X } from 'lucide-react-native';
+import { X, Search as SearchIcon } from 'lucide-react-native';
+import { theme } from '../../constants/theme';
+import GlassView from '../ui/GlassView';
+import { LinearGradient } from 'expo-linear-gradient';
 
 interface MovieSearchProps {
   onSelectMovie: (movie: TMDBMovie) => void;
@@ -51,60 +56,87 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Search for a movie</Text>
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <X color="#fff" size={24} />
-        </TouchableOpacity>
-      </View>
-
-      <TextInput
-        style={styles.searchInput}
-        value={query}
-        onChangeText={setQuery}
-        placeholder="Movie title..."
-        placeholderTextColor={COLORS.placeholder}
-        autoFocus
+      <LinearGradient
+        colors={[theme.colors.background, '#1e1b4b']}
+        style={StyleSheet.absoluteFill}
       />
 
-      {isLoading ? (
-        <ActivityIndicator size="large" color={COLORS.primary} style={styles.loader} />
-      ) : error ? (
-        <Text style={styles.errorText}>{error}</Text>
-      ) : results.length === 0 && query.trim().length >= 2 ? (
-        <Text style={styles.noResults}>No results found</Text>
-      ) : (
-        <FlatList
-          data={results}
-          keyExtractor={(item) => item.id.toString()}
-          renderItem={({ item }) => (
-            <TouchableOpacity
-              style={styles.resultItem}
-              onPress={() => onSelectMovie(item)}
-            >
-              {item.posterUrl ? (
-                <Image source={{ uri: item.posterUrl }} style={styles.poster} />
-              ) : (
-                <View style={styles.noPoster}>
-                  <Text style={styles.noPosterText}>No Image</Text>
-                </View>
-              )}
-              <View style={styles.movieInfo}>
-                <Text style={styles.movieTitle}>{item.title}</Text>
-                {item.releaseDate && (
-                  <Text style={styles.releaseDate}>
-                    {new Date(item.releaseDate).getFullYear()}
-                  </Text>
-                )}
-                <Text style={styles.overview} numberOfLines={2}>
-                  {item.overview || 'No description available'}
-                </Text>
-              </View>
+      <GlassView intensity={50} style={styles.header}>
+        <View style={styles.searchBar}>
+          <SearchIcon color={theme.colors.text.tertiary} size={20} style={styles.searchIcon} />
+          <TextInput
+            style={styles.searchInput}
+            value={query}
+            onChangeText={setQuery}
+            placeholder="Search for a movie..."
+            placeholderTextColor={theme.colors.text.tertiary}
+            autoFocus
+            selectionColor={theme.colors.primary}
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')}>
+              <X color={theme.colors.text.tertiary} size={20} />
             </TouchableOpacity>
           )}
-          contentContainerStyle={styles.resultsList}
-        />
-      )}
+        </View>
+        <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
+          <Text style={styles.cancelText}>Cancel</Text>
+        </TouchableOpacity>
+      </GlassView>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.content}
+      >
+        {isLoading ? (
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
+        ) : error ? (
+          <View style={styles.centerContainer}>
+            <Text style={styles.errorText}>{error}</Text>
+          </View>
+        ) : results.length === 0 && query.trim().length >= 2 ? (
+          <View style={styles.centerContainer}>
+            <Text style={styles.noResults}>No results found</Text>
+          </View>
+        ) : (
+          <FlatList
+            data={results}
+            keyExtractor={(item) => item.id.toString()}
+            renderItem={({ item }) => (
+              <TouchableOpacity
+                style={styles.resultItemWrapper}
+                onPress={() => onSelectMovie(item)}
+                activeOpacity={0.7}
+              >
+                <GlassView intensity={20} style={styles.resultItem}>
+                  {item.posterUrl ? (
+                    <Image source={{ uri: item.posterUrl }} style={styles.poster} />
+                  ) : (
+                    <View style={styles.noPoster}>
+                      <Text style={styles.noPosterText}>No Image</Text>
+                    </View>
+                  )}
+                  <View style={styles.movieInfo}>
+                    <Text style={styles.movieTitle}>{item.title}</Text>
+                    {item.releaseDate && (
+                      <Text style={styles.releaseDate}>
+                        {new Date(item.releaseDate).getFullYear()}
+                      </Text>
+                    )}
+                    <Text style={styles.overview} numberOfLines={2}>
+                      {item.overview || 'No description available'}
+                    </Text>
+                  </View>
+                </GlassView>
+              </TouchableOpacity>
+            )}
+            contentContainerStyle={styles.resultsList}
+            showsVerticalScrollIndicator={false}
+          />
+        )}
+      </KeyboardAvoidingView>
     </View>
   );
 }
@@ -112,92 +144,108 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: COLORS.background,
-    paddingTop: 50,
+    backgroundColor: theme.colors.background,
   },
   header: {
+    paddingTop: 60,
+    paddingBottom: theme.spacing.m,
+    paddingHorizontal: theme.spacing.m,
     flexDirection: 'row',
-    justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
-    marginTop: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(255,255,255,0.05)',
   },
-  title: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: COLORS.text,
-  },
-  closeButton: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+  searchBar: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: theme.borderRadius.m,
+    paddingHorizontal: theme.spacing.m,
+    height: 48,
+    marginRight: theme.spacing.m,
+  },
+  searchIcon: {
+    marginRight: theme.spacing.s,
+  },
+  searchInput: {
+    flex: 1,
+    fontSize: 16,
+    color: theme.colors.text.primary,
+    height: '100%',
+  },
+  cancelButton: {
+    padding: theme.spacing.s,
+  },
+  cancelText: {
+    ...theme.typography.body,
+    color: theme.colors.primary,
+    fontWeight: '600',
+  },
+  content: {
+    flex: 1,
+  },
+  centerContainer: {
+    flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
-  searchInput: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    color: COLORS.text,
-    marginHorizontal: 16,
-    marginBottom: 16,
-  },
   resultsList: {
-    padding: 16,
+    padding: theme.spacing.m,
+  },
+  resultItemWrapper: {
+    marginBottom: theme.spacing.m,
   },
   resultItem: {
     flexDirection: 'row',
-    backgroundColor: COLORS.card,
-    borderRadius: 12,
-    marginBottom: 12,
+    borderRadius: theme.borderRadius.m,
     overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.05)',
   },
   poster: {
     width: 80,
     height: 120,
+    backgroundColor: theme.colors.surfaceHighlight,
   },
   noPoster: {
     width: 80,
     height: 120,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: theme.colors.surfaceHighlight,
     justifyContent: 'center',
     alignItems: 'center',
   },
   noPosterText: {
-    color: 'rgba(255, 255, 255, 0.5)',
+    ...theme.typography.small,
+    color: theme.colors.text.tertiary,
   },
   movieInfo: {
     flex: 1,
-    padding: 12,
+    padding: theme.spacing.m,
+    justifyContent: 'center',
   },
   movieTitle: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: COLORS.text,
+    ...theme.typography.h3,
+    fontSize: 18,
+    color: theme.colors.text.primary,
     marginBottom: 4,
   },
   releaseDate: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.6)',
+    ...theme.typography.small,
+    color: theme.colors.primary,
     marginBottom: 8,
+    fontWeight: '600',
   },
   overview: {
-    fontSize: 14,
-    color: 'rgba(255, 255, 255, 0.8)',
-  },
-  loader: {
-    marginTop: 40,
+    ...theme.typography.small,
+    color: theme.colors.text.secondary,
   },
   errorText: {
-    color: COLORS.notification,
-    textAlign: 'center',
-    marginTop: 40,
+    ...theme.typography.body,
+    color: theme.colors.error,
   },
   noResults: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    textAlign: 'center',
-    marginTop: 40,
+    ...theme.typography.body,
+    color: theme.colors.text.secondary,
   },
 });

@@ -1,129 +1,147 @@
+
 import React from 'react';
 import {
-  View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
-  Pressable,
+  ImageBackground,
   Dimensions,
+  View,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Edit2, Trash2 } from 'lucide-react-native';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { MovieList } from '../../types';
+import { theme } from '../../constants/theme';
+import GlassView from '../ui/GlassView';
 
 interface ListCardProps {
   list: MovieList;
   onPress: (listId: string, title: string) => void;
   onEdit: (list: MovieList) => void;
   onDelete: (listId: string) => void;
+  index?: number;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
-const CARD_WIDTH = SCREEN_WIDTH * 0.42;
-const CARD_HEIGHT = CARD_WIDTH * (16/9);
+// Calculate card width for 2 columns with spacing
+const COLUMN_SPACING = theme.spacing.m;
+const CARD_WIDTH = (SCREEN_WIDTH - (theme.spacing.m * 3)) / 2;
+const CARD_HEIGHT = CARD_WIDTH * 1.5; // 2:3 Poster Ratio
 
-export default function ListCard({ list, onPress, onEdit, onDelete }: ListCardProps) {
+export default function ListCard({ list, onPress, onEdit, onDelete, index = 0 }: ListCardProps) {
   return (
-    <View style={styles.listItemContainer}>
-      <Pressable
-        style={styles.listItem}
+    <Animated.View
+      entering={FadeInUp.delay(index * 100).springify()}
+      style={styles.container}
+    >
+      <TouchableOpacity
+        activeOpacity={0.9}
         onPress={() => onPress(list.id, list.title)}
-        android_ripple={{ color: 'rgba(255, 255, 255, 0.1)' }}
+        style={styles.card}
       >
-        <Image 
+        <ImageBackground
           source={{ uri: list.imageUrl || 'https://reactnative.dev/img/tiny_logo.png' }}
-          style={styles.listImage}
-          resizeMode="cover"
-        />
-        <LinearGradient
-          colors={['transparent', 'rgba(0,0,0,0.8)']}
-          style={styles.gradient}
+          style={styles.imageBackground}
+          imageStyle={styles.image}
         >
-          <Text style={styles.listTitle} numberOfLines={2}>{list.title}</Text>
-          <Text style={styles.listDate}>
-            {new Date(list.createdAt).toLocaleDateString()}
-          </Text>
-        </LinearGradient>
-        
-        <View style={styles.actionButtons}>
-          <TouchableOpacity 
-            style={styles.actionButton}
-            onPress={() => onEdit(list)}
-          >
-            <Edit2 color="#fff" size={16} />
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={[styles.actionButton, styles.deleteButton]}
-            onPress={() => onDelete(list.id)}
-          >
-            <Trash2 color="#fff" size={16} />
-          </TouchableOpacity>
-        </View>
-      </Pressable>
-    </View>
+          <LinearGradient
+            colors={['transparent', 'transparent', theme.colors.background]}
+            locations={[0, 0.5, 1]}
+            style={styles.gradient}
+          />
+
+          <View style={styles.content}>
+            <GlassView style={styles.glassContainer} intensity={40}>
+              <Text style={styles.title} numberOfLines={2}>{list.title}</Text>
+              <Text style={styles.date}>
+                {new Date(list.createdAt).toLocaleDateString()}
+              </Text>
+            </GlassView>
+          </View>
+
+          <View style={styles.actions}>
+            <GlassView style={styles.actionButton} intensity={60}>
+              <TouchableOpacity onPress={() => onEdit(list)} hitSlop={10}>
+                <Edit2 color={theme.colors.text.primary} size={14} />
+              </TouchableOpacity>
+            </GlassView>
+            <GlassView style={[styles.actionButton, styles.deleteButton]} intensity={60}>
+              <TouchableOpacity onPress={() => onDelete(list.id)} hitSlop={10}>
+                <Trash2 color={theme.colors.error} size={14} />
+              </TouchableOpacity>
+            </GlassView>
+          </View>
+        </ImageBackground>
+      </TouchableOpacity>
+    </Animated.View>
   );
 }
 
 const styles = StyleSheet.create({
-  listItemContainer: {
-    width: '50%',
-    padding: 8,
-  },
-  listItem: {
-    borderRadius: 16,
-    overflow: 'hidden',
+  container: {
     width: CARD_WIDTH,
-    height: CARD_HEIGHT,
-    backgroundColor: '#2a2a2a',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
+    marginBottom: theme.spacing.m,
   },
-  listImage: {
-    width: '100%',
-    height: '100%',
+  card: {
+    height: CARD_HEIGHT,
+    borderRadius: theme.borderRadius.m,
+    overflow: 'hidden',
+    backgroundColor: theme.colors.surface,
+    elevation: 8,
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  imageBackground: {
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  image: {
+    borderRadius: theme.borderRadius.m,
   },
   gradient: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: '50%',
-    justifyContent: 'flex-end',
-    padding: 12,
+    ...StyleSheet.absoluteFillObject,
   },
-  listTitle: {
-    fontSize: 16,
+  content: {
+    padding: theme.spacing.s,
+  },
+  glassContainer: {
+    borderRadius: theme.borderRadius.s,
+    padding: theme.spacing.s,
+    borderWidth: 0, // Override GlassView default
+  },
+  title: {
+    ...theme.typography.body,
     fontWeight: '700',
-    color: '#fff',
+    color: theme.colors.text.primary,
     marginBottom: 4,
+    textShadowColor: 'rgba(0,0,0,0.5)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 2,
   },
-  listDate: {
-    fontSize: 12,
-    color: 'rgba(255, 255, 255, 0.7)',
+  date: {
+    ...theme.typography.small,
+    color: theme.colors.text.secondary,
   },
-  actionButtons: {
+  actions: {
     position: 'absolute',
-    top: 8,
-    right: 8,
-    flexDirection: 'row',
+    top: theme.spacing.s,
+    right: theme.spacing.s,
+    gap: theme.spacing.xs,
   },
   actionButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    width: 28,
+    height: 28,
+    borderRadius: 14,
     justifyContent: 'center',
     alignItems: 'center',
-    marginLeft: 8,
+    borderWidth: 0,
   },
   deleteButton: {
-    backgroundColor: 'rgba(255, 59, 48, 0.7)',
-  },
+    // Optional: Add specific style for delete button container
+  }
 });

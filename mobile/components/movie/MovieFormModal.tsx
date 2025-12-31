@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   View,
@@ -10,7 +11,13 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
+  Platform,
+  KeyboardAvoidingView,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
+import { X, Check } from 'lucide-react-native';
+import { theme } from '../../constants/theme';
+import GlassView from '../ui/GlassView';
 
 interface MovieFormModalProps {
   visible: boolean;
@@ -46,74 +53,88 @@ export default function MovieFormModal({
       animationType="slide"
       transparent={true}
       visible={visible}
-      onRequestClose={() => {
-        Keyboard.dismiss();
-        onCancel();
-      }}
+      onRequestClose={onCancel}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <ScrollView>
-              <Text style={styles.modalTitle}>{title}</Text>
-              
-              <TouchableOpacity 
-                style={styles.imagePickerContainer}
-                onPress={onPickImage}
-              >
-                {imageUrl ? (
-                  <Image 
-                    source={{ uri: imageUrl }} 
-                    style={styles.previewImage}
-                  />
-                ) : (
-                  <View style={styles.imagePlaceholder}>
-                    <Text style={styles.imagePlaceholderText}>Tap to add movie image</Text>
-                  </View>
-                )}
-              </TouchableOpacity>
-              
-              <TextInput
-                style={styles.input}
-                value={value}
-                onChangeText={onChangeTitle}
-                placeholder="Enter movie title"
-                placeholderTextColor="#a0a0a0"
-              />
-              
-              <TextInput
-                style={[styles.input, styles.notesInput]}
-                value={notes}
-                onChangeText={onChangeNotes}
-                placeholder="Add notes (optional)"
-                placeholderTextColor="#a0a0a0"
-                multiline
-                numberOfLines={4}
-                textAlignVertical="top"
-              />
-              
-              {error && <Text style={styles.errorText}>{error}</Text>}
-              <View style={styles.modalButtons}>
-                <TouchableOpacity
-                  style={[styles.button, styles.cancelButton]}
-                  onPress={() => {
-                    Keyboard.dismiss();
-                    onCancel();
-                  }}
-                >
-                  <Text style={styles.buttonText}>Cancel</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.button, styles.submitButton]}
-                  onPress={onSubmit}
-                >
-                  <Text style={[styles.buttonText, styles.submitButtonText]}>
-                    {isEditing ? 'Update' : 'Add Movie'}
-                  </Text>
+        <View style={styles.overlay}>
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            style={styles.keyboardView}
+          >
+            <GlassView intensity={40} style={styles.modalContent}>
+              <View style={styles.header}>
+                <Text style={styles.title}>{title}</Text>
+                <TouchableOpacity onPress={onCancel} style={styles.closeButton}>
+                  <X color={theme.colors.text.secondary} size={24} />
                 </TouchableOpacity>
               </View>
-            </ScrollView>
-          </View>
+
+              <ScrollView showsVerticalScrollIndicator={false}>
+                <TouchableOpacity
+                  style={styles.imagePicker}
+                  onPress={onPickImage}
+                  activeOpacity={0.8}
+                >
+                  {imageUrl ? (
+                    <Image source={{ uri: imageUrl }} style={styles.previewImage} />
+                  ) : (
+                    <View style={styles.placeholder}>
+                      <Text style={styles.placeholderText}>Tap to add poster</Text>
+                    </View>
+                  )}
+                  <View style={styles.imageOverlay}>
+                    <Text style={styles.imageEditLabel}>Edit Poster</Text>
+                  </View>
+                </TouchableOpacity>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Movie Title</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={value}
+                    onChangeText={onChangeTitle}
+                    placeholder="Enter movie title"
+                    placeholderTextColor={theme.colors.text.tertiary}
+                    selectionColor={theme.colors.primary}
+                  />
+                </View>
+
+                <View style={styles.formGroup}>
+                  <Text style={styles.label}>Notes (Optional)</Text>
+                  <TextInput
+                    style={[styles.input, styles.textArea]}
+                    value={notes}
+                    onChangeText={onChangeNotes}
+                    placeholder="Why do you like this movie?"
+                    placeholderTextColor={theme.colors.text.tertiary}
+                    selectionColor={theme.colors.primary}
+                    multiline
+                    textAlignVertical="top"
+                  />
+                </View>
+
+                {error && <Text style={styles.errorText}>{error}</Text>}
+
+                <TouchableOpacity
+                  style={styles.submitButton}
+                  onPress={onSubmit}
+                  activeOpacity={0.8}
+                >
+                  <LinearGradient
+                    colors={[theme.colors.primary, theme.colors.secondary]}
+                    style={styles.gradientButton}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 0 }}
+                  >
+                    <Text style={styles.submitText}>
+                      {isEditing ? 'Update Movie' : 'Add Movie'}
+                    </Text>
+                  </LinearGradient>
+                </TouchableOpacity>
+                <View style={{ height: 20 }} />
+              </ScrollView>
+            </GlassView>
+          </KeyboardAvoidingView>
         </View>
       </TouchableWithoutFeedback>
     </Modal>
@@ -121,103 +142,120 @@ export default function MovieFormModal({
 }
 
 const styles = StyleSheet.create({
-  modalContainer: {
+  overlay: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0,0,0,0.7)',
+    justifyContent: 'flex-end',
+  },
+  keyboardView: {
+    width: '100%',
+    maxHeight: '90%',
   },
   modalContent: {
-    backgroundColor: '#1E1E1E',
-    borderRadius: 24,
-    padding: 24,
-    width: '90%',
-    maxWidth: 400,
-    maxHeight: '80%',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 12,
-    elevation: 8,
-  },
-  modalTitle: {
-    fontSize: 24,
-    fontWeight: '700',
-    marginBottom: 20,
-    color: '#fff',
-    textAlign: 'center',
-  },
-  input: {
+    borderTopLeftRadius: theme.borderRadius.xl,
+    borderTopRightRadius: theme.borderRadius.xl,
+    padding: theme.spacing.l,
+    paddingBottom: Platform.OS === 'ios' ? 40 : theme.spacing.l,
+    backgroundColor: 'rgba(30, 41, 59, 0.95)',
     borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    fontSize: 16,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    color: '#fff',
+    borderColor: 'rgba(255,255,255,0.1)',
+    height: '100%',
   },
-  notesInput: {
-    minHeight: 100,
-  },
-  modalButtons: {
+  header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-  },
-  button: {
-    padding: 16,
-    borderRadius: 12,
-    flex: 1,
     alignItems: 'center',
-    marginHorizontal: 6,
+    marginBottom: theme.spacing.l,
   },
-  cancelButton: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  title: {
+    ...theme.typography.h2,
+    color: theme.colors.text.primary,
   },
-  submitButton: {
-    backgroundColor: '#0A84FF',
+  closeButton: {
+    padding: 4,
   },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#fff',
-  },
-  submitButtonText: {
-    color: '#fff',
-  },
-  errorText: {
-    color: '#FF453A',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  imagePickerContainer: {
-    width: '100%',
-    height: 150,
-    borderRadius: 12,
-    marginBottom: 20,
+  imagePicker: {
+    height: 180, // Taller for movie poster
+    borderRadius: theme.borderRadius.m,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-  },
-  imagePlaceholder: {
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    borderRadius: 12,
-    borderStyle: 'dashed',
-  },
-  imagePlaceholderText: {
-    color: 'rgba(255, 255, 255, 0.6)',
-    fontSize: 16,
+    marginBottom: theme.spacing.l,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    width: 120, // Poster ratioish
+    alignSelf: 'center',
   },
   previewImage: {
     width: '100%',
     height: '100%',
     resizeMode: 'cover',
+  },
+  placeholder: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.1)',
+    borderStyle: 'dashed',
+    borderRadius: theme.borderRadius.m,
+  },
+  placeholderText: {
+    ...theme.typography.small,
+    color: theme.colors.text.secondary,
+    textAlign: 'center',
+  },
+  imageOverlay: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    padding: 4,
+    alignItems: 'center',
+  },
+  imageEditLabel: {
+    ...theme.typography.small,
+    color: theme.colors.text.primary,
+    fontSize: 10,
+    fontWeight: '600',
+  },
+  formGroup: {
+    marginBottom: theme.spacing.m,
+  },
+  label: {
+    ...theme.typography.caption,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.xs,
+    marginLeft: 4,
+  },
+  input: {
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: theme.borderRadius.m,
+    padding: theme.spacing.m,
+    color: theme.colors.text.primary,
+    fontSize: 16,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.1)',
+  },
+  textArea: {
+    minHeight: 100,
+  },
+  errorText: {
+    ...theme.typography.small,
+    color: theme.colors.error,
+    marginBottom: theme.spacing.m,
+    textAlign: 'center',
+  },
+  submitButton: {
+    marginTop: theme.spacing.s,
+    borderRadius: theme.borderRadius.m,
+    overflow: 'hidden',
+  },
+  gradientButton: {
+    paddingVertical: theme.spacing.m,
+    alignItems: 'center',
+  },
+  submitText: {
+    ...theme.typography.h3,
+    color: theme.colors.white,
+    fontWeight: '600',
   },
 });

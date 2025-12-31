@@ -1,24 +1,31 @@
-import { useState } from 'react';
+
+import { useState, useCallback } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  FlatList,
   ActivityIndicator,
   Modal,
+  StatusBar,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Plus, Search } from 'lucide-react-native';
-import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useMovieItems } from '../../hooks/useMovieItems';
+import { theme } from '../../constants/theme';
+import GlassView from '../../components/ui/GlassView';
+import DraggableFlatList, {
+  RenderItemParams,
+} from 'react-native-draggable-flatlist';
 import MovieItem from '../../components/movie/MovieItem';
 import MovieFormModal from '../../components/movie/MovieFormModal';
 import MovieSearch from '../../components/movie/MovieSearch';
+import { Movie } from '../../types';
 
 export default function ListDetailScreen() {
   const { id, title } = useLocalSearchParams<{ id: string; title: string }>();
-  
+
   const {
     movies,
     isLoading,
@@ -51,46 +58,70 @@ export default function ListDetailScreen() {
     return null;
   };
 
+  const renderItem = useCallback(({ item, index, drag, isActive }: RenderItemParams<Movie>) => {
+    return (
+      <MovieItem
+        item={item}
+        index={index || 0}
+        drag={drag}
+        isActive={isActive}
+        medalEmoji={getMedalEmoji((index || 0) + 1)}
+        onEdit={openEditModal}
+        onDelete={handleDeleteMovie}
+        itemCount={movies.length}
+        onDragEnd={() => { }} // Not needed for DraggableFlatList internal sort
+      />
+    );
+  }, [movies.length, openEditModal, handleDeleteMovie]);
+
   return (
     <View style={styles.container}>
-      <BlurView intensity={20} style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <ArrowLeft color="#fff" size={24} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{title}</Text>
-        <View style={styles.headerRight} />
-      </BlurView>
-      
+      <StatusBar barStyle="light-content" />
+      <LinearGradient
+        colors={[theme.colors.background, '#1e1b4b']}
+        style={StyleSheet.absoluteFill}
+      />
+
+      <GlassView intensity={50} style={styles.header}>
+        <View style={styles.headerContent}>
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => router.back()}
+            hitSlop={20}
+          >
+            <ArrowLeft color={theme.colors.text.primary} size={24} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle} numberOfLines={1}>
+            {title}
+          </Text>
+          <View style={styles.headerRight} />
+        </View>
+      </GlassView>
+
       <View style={styles.content}>
         {isLoading ? (
-          <ActivityIndicator size="large" color="#0A84FF" style={styles.loader} />
+          <View style={styles.centerContainer}>
+            <ActivityIndicator size="large" color={theme.colors.primary} />
+          </View>
         ) : movies.length === 0 ? (
-          <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>
-              This list is empty.
-            </Text>
-            <Text style={styles.emptyStateSubtext}>
-              Add your first movie to start ranking!
-            </Text>
+          <View style={styles.centerContainer}>
+            <GlassView intensity={20} style={styles.emptyState}>
+              <Text style={styles.emptyStateText}>
+                No movies yet
+              </Text>
+              <Text style={styles.emptyStateSubtext}>
+                Tap the + button to start ranking!
+              </Text>
+            </GlassView>
           </View>
         ) : (
-          <FlatList
+          <DraggableFlatList
             data={movies}
-            renderItem={({ item, index }) => (
-              <MovieItem
-                item={item}
-                index={index}
-                onDragEnd={handleReorderMovies}
-                itemCount={movies.length}
-                medalEmoji={getMedalEmoji(item.rank)}
-                onEdit={openEditModal}
-                onDelete={handleDeleteMovie}
-              />
-            )}
+            onDragEnd={({ data, from, to }) => {
+              handleReorderMovies(from, to, data);
+            }}
             keyExtractor={(item) => item.id}
+            renderItem={renderItem}
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
           />
@@ -98,16 +129,28 @@ export default function ListDetailScreen() {
 
         <View style={styles.fabContainer}>
           <TouchableOpacity
-            style={[styles.addButton, styles.searchButton]}
+            style={styles.fabWrapper}
             onPress={openSearchModal}
+            activeOpacity={0.8}
           >
-            <Search color="#fff" size={24} />
+            <GlassView intensity={40} style={[styles.fab, styles.searchFab]}>
+              <Search color={theme.colors.white} size={24} />
+            </GlassView>
           </TouchableOpacity>
+
           <TouchableOpacity
-            style={styles.addButton}
+            style={styles.fabWrapper}
             onPress={openCreateModal}
+            activeOpacity={0.8}
           >
-            <Plus color="#fff" size={24} />
+            <LinearGradient
+              colors={[theme.colors.primary, theme.colors.secondary]}
+              style={styles.fabGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+            >
+              <Plus color={theme.colors.white} size={28} />
+            </LinearGradient>
           </TouchableOpacity>
         </View>
       </View>
@@ -151,7 +194,7 @@ export default function ListDetailScreen() {
           visible={isSearching}
           onRequestClose={closeModals}
         >
-          <MovieSearch 
+          <MovieSearch
             onSelectMovie={handleSelectTMDBMovie}
             onClose={closeModals}
           />
@@ -164,16 +207,19 @@ export default function ListDetailScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#121212',
+    backgroundColor: theme.colors.background,
   },
   header: {
     paddingTop: 60,
     paddingBottom: 16,
-    backgroundColor: 'rgba(18, 18, 18, 0.8)',
+    zIndex: 10,
+    borderBottomWidth: 0,
+  },
+  headerContent: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    paddingHorizontal: theme.spacing.m,
   },
   backButton: {
     width: 40,
@@ -181,70 +227,78 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: 'rgba(255,255,255,0.1)',
   },
   headerTitle: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: '#fff',
+    ...theme.typography.h3,
+    color: theme.colors.text.primary,
     textAlign: 'center',
     flex: 1,
+    marginHorizontal: theme.spacing.m,
   },
   headerRight: {
     width: 40,
   },
   content: {
     flex: 1,
-    padding: 16,
   },
-  listContainer: {
-    paddingBottom: 80,
-  },
-  emptyState: {
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32,
+    padding: theme.spacing.xl,
+  },
+  listContainer: {
+    paddingTop: theme.spacing.m,
+    paddingBottom: 120, // Space for FABs
+  },
+  emptyState: {
+    padding: theme.spacing.xl,
+    borderRadius: theme.borderRadius.l,
+    alignItems: 'center',
+    width: '100%',
   },
   emptyStateText: {
-    fontSize: 20,
-    fontWeight: '600',
-    color: '#fff',
-    textAlign: 'center',
-    marginBottom: 12,
+    ...theme.typography.h3,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.s,
   },
   emptyStateSubtext: {
-    fontSize: 16,
-    color: 'rgba(255, 255, 255, 0.6)',
+    ...theme.typography.body,
+    color: theme.colors.text.secondary,
     textAlign: 'center',
   },
   fabContainer: {
     position: 'absolute',
-    bottom: 24,
+    bottom: 32,
     right: 24,
-    flexDirection: 'column',
+    gap: 16,
+    alignItems: 'center',
   },
-  addButton: {
+  fabWrapper: {
+    shadowColor: theme.colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  fab: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  searchFab: {
+    backgroundColor: 'rgba(6, 182, 212, 0.2)', // Cyan with opacity
+    borderColor: theme.colors.accent,
+    borderWidth: 1,
+  },
+  fabGradient: {
     width: 60,
     height: 60,
     borderRadius: 30,
-    backgroundColor: '#0A84FF',
     justifyContent: 'center',
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 5,
-    marginTop: 16,
-  },
-  searchButton: {
-    backgroundColor: '#4CAF50',
-  },
-  loader: {
-    flex: 1,
   },
 });

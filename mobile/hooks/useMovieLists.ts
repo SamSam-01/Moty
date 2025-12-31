@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
 
 export function useMovieLists() {
-  const { lists, addList, updateList, deleteList } = useAppContext();
+  const { lists, addList, updateList, deleteList, signOut } = useAppContext();
   const [isCreating, setIsCreating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [currentList, setCurrentList] = useState<MovieList | null>(null);
@@ -39,19 +39,19 @@ export function useMovieLists() {
 
   const pickImage = async () => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    
+
     if (status !== 'granted') {
       Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to make this work!');
       return;
     }
-  
+
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       aspect: [9, 16],
       quality: 0.8,
     });
-  
+
     if (!result.canceled && result.assets && result.assets.length > 0) {
       setImageUrl(result.assets[0].uri);
     }
@@ -76,7 +76,7 @@ export function useMovieLists() {
 
   const handleUpdateList = async () => {
     if (!currentList) return;
-    
+
     if (!title.trim()) {
       setFormError('Title cannot be empty');
       return;
@@ -134,5 +134,6 @@ export function useMovieLists() {
     handleCreateList,
     handleUpdateList,
     handleDeleteList,
+    signOut,
   };
 }
