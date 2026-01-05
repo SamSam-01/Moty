@@ -175,13 +175,6 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
 
       {/* Header */}
       <GlassView intensity={50} style={styles.header}>
-        <View style={styles.topRow}>
-          <Text style={styles.headerTitle}>Search</Text>
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <X color={theme.colors.text.secondary} size={24} />
-          </TouchableOpacity>
-        </View>
-
         <View style={styles.searchRow}>
           <View style={styles.searchBar}>
             <SearchIcon color={theme.colors.text.tertiary} size={20} style={styles.searchIcon} />
@@ -209,6 +202,10 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
             style={styles.filterButton}
           >
             <Filter color={theme.colors.primary} size={20} />
+          </TouchableOpacity>
+
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <X color={theme.colors.text.secondary} size={22} />
           </TouchableOpacity>
         </View>
       </GlassView>
@@ -284,23 +281,11 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   header: {
-    paddingTop: 50,
-    paddingBottom: theme.spacing.s,
+    paddingTop: 56,
+    paddingBottom: theme.spacing.m,
     paddingHorizontal: theme.spacing.m,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
-  },
-  topRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: theme.spacing.s,
-  },
-  headerTitle: {
-    ...theme.typography.h1,
-    fontSize: 28,
-    color: theme.colors.text.primary,
-    fontWeight: '800' as const,
   },
   searchRow: {
     flexDirection: 'row',
