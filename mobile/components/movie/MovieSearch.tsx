@@ -175,6 +175,8 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
 
       {/* Header */}
       <GlassView intensity={50} style={styles.header}>
+        <Text style={styles.headerTitle}>Search</Text>
+
         <View style={styles.headerRow}>
           <View style={styles.searchBar}>
             <SearchIcon color={theme.colors.text.tertiary} size={20} style={styles.searchIcon} />
@@ -205,8 +207,8 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
           </TouchableOpacity>
         </View>
 
-        <TouchableOpacity onPress={onClose} style={styles.cancelButton}>
-          <Text style={styles.cancelText}>Annuler</Text>
+        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <X color={theme.colors.text.secondary} size={24} />
         </TouchableOpacity>
       </GlassView>
 
@@ -230,9 +232,10 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
               data={trendingMovies}
               keyExtractor={(item) => item.id.toString()}
               renderItem={renderTrendingCard}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={styles.trendingList}
+              numColumns={2}
+              columnWrapperStyle={styles.trendingRow}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.trendingGrid}
             />
           </View>
         ) : results.length === 0 && query.trim().length >= 2 ? (
@@ -283,9 +286,15 @@ const styles = StyleSheet.create({
     paddingTop: 60,
     paddingBottom: theme.spacing.m,
     paddingHorizontal: theme.spacing.m,
-    gap: theme.spacing.s,
+    gap: theme.spacing.m,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
+  },
+  headerTitle: {
+    ...theme.typography.h1,
+    fontSize: 32,
+    color: theme.colors.text.primary,
+    fontWeight: '800' as const,
   },
   headerRow: {
     flex: 1,
@@ -324,15 +333,16 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  cancelButton: {
-    paddingVertical: theme.spacing.s,
-    paddingHorizontal: theme.spacing.m,
-  },
-  cancelText: {
-    ...theme.typography.body,
-    color: theme.colors.primary,
-    fontWeight: '700' as const,
-    fontSize: 16,
+  closeButton: {
+    position: 'absolute',
+    top: 60,
+    right: theme.spacing.m,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   content: {
     flex: 1,
@@ -443,23 +453,28 @@ const styles = StyleSheet.create({
   },
   // Trending section
   trendingContainer: {
+    flex: 1,
     paddingTop: theme.spacing.l,
   },
   sectionTitle: {
     ...theme.typography.h2,
-    fontSize: 20,
+    fontSize: 24,
     color: theme.colors.text.primary,
     paddingHorizontal: theme.spacing.m,
     marginBottom: theme.spacing.m,
+    fontWeight: '700' as const,
   },
-  trendingList: {
+  trendingGrid: {
     paddingHorizontal: theme.spacing.m,
-    gap: theme.spacing.m,
+    paddingBottom: theme.spacing.xl,
+  },
+  trendingRow: {
+    justifyContent: 'space-between',
+    marginBottom: theme.spacing.m,
   },
   trendingCard: {
-    width: 140,
-    height: 210,
-    marginRight: theme.spacing.m,
+    width: '48%',
+    aspectRatio: 2 / 3,
     borderRadius: theme.borderRadius.l,
     overflow: 'hidden',
   },
