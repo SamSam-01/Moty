@@ -175,9 +175,14 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
 
       {/* Header */}
       <GlassView intensity={50} style={styles.header}>
-        <Text style={styles.headerTitle}>Search</Text>
+        <View style={styles.topRow}>
+          <Text style={styles.headerTitle}>Search</Text>
+          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+            <X color={theme.colors.text.secondary} size={24} />
+          </TouchableOpacity>
+        </View>
 
-        <View style={styles.headerRow}>
+        <View style={styles.searchRow}>
           <View style={styles.searchBar}>
             <SearchIcon color={theme.colors.text.tertiary} size={20} style={styles.searchIcon} />
             <TextInput
@@ -206,10 +211,6 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
             <Filter color={theme.colors.primary} size={20} />
           </TouchableOpacity>
         </View>
-
-        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-          <X color={theme.colors.text.secondary} size={24} />
-        </TouchableOpacity>
       </GlassView>
 
       <KeyboardAvoidingView
@@ -283,21 +284,25 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   header: {
-    paddingTop: 60,
-    paddingBottom: theme.spacing.m,
+    paddingTop: 50,
+    paddingBottom: theme.spacing.s,
     paddingHorizontal: theme.spacing.m,
-    gap: theme.spacing.m,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
   },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: theme.spacing.s,
+  },
   headerTitle: {
     ...theme.typography.h1,
-    fontSize: 32,
+    fontSize: 28,
     color: theme.colors.text.primary,
     fontWeight: '800' as const,
   },
-  headerRow: {
-    flex: 1,
+  searchRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.s,
@@ -334,12 +339,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   closeButton: {
-    position: 'absolute',
-    top: 60,
-    right: theme.spacing.m,
-    width: 40,
-    height: 40,
-    borderRadius: 20,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
     backgroundColor: 'rgba(255, 255, 255, 0.05)',
     justifyContent: 'center',
     alignItems: 'center',
