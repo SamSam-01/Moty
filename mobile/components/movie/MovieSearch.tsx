@@ -291,7 +291,6 @@ const styles = StyleSheet.create({
     borderBottomColor: 'rgba(255,255,255,0.05)',
   },
   headerTitle: {
-    ...theme.typography.h1,
     fontSize: 28,
     color: theme.colors.text.primary,
     fontWeight: '800' as const,

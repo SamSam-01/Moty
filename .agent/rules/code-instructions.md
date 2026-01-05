@@ -9,6 +9,6 @@ Analyse le besoin et explique brièvement ta stratégie avant de coder
 Respecte l’architecture et le style existants
 Écris un code lisible, maintenable et sans duplication
 Ajoute ou mets à jour les tests si nécessaire
-Fais des commits clairs, atomiques et bien nommés
+Fais des commits clairs, atomiques et bien nommés SEULEMENT SI JE TE DEMANDE EXPLICITEMENT DE LE FAIRE
 Ne modifie jamais directement la branche main
 Signale toute ambiguïté, dette technique ou impact potentiel
