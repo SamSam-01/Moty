@@ -174,7 +174,7 @@ const styles = StyleSheet.create({
   },
   rankText: {
     fontSize: 24,
-    fontWeight: '800',
+    fontWeight: '800' as const,
     fontStyle: 'italic',
   },
   mainContent: {
@@ -196,7 +196,7 @@ const styles = StyleSheet.create({
   },
   titleText: {
     ...theme.typography.body,
-    fontWeight: '600',
+    fontWeight: '600' as const,
     color: theme.colors.text.primary, // Ensure high contrast white
     marginBottom: 4,
     textShadowColor: 'rgba(0,0,0,0.5)', // Add shadow for legibility
@@ -221,7 +221,7 @@ const styles = StyleSheet.create({
   ratingText: {
     ...theme.typography.small,
     color: '#FBBF24',
-    fontWeight: '700',
+    fontWeight: '700' as const,
   },
   yearText: {
     ...theme.typography.small,

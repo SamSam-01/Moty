@@ -219,7 +219,7 @@ const styles = StyleSheet.create({
   greeting: {
     ...theme.typography.caption,
     color: theme.colors.primary,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: theme.spacing.xs,

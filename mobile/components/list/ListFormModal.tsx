@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   imageEditLabel: {
     ...theme.typography.small,
     color: theme.colors.text.primary,
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   formGroup: {
     marginBottom: theme.spacing.m,
@@ -225,6 +225,6 @@ const styles = StyleSheet.create({
   submitText: {
     ...theme.typography.h3,
     color: theme.colors.white,
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
 });

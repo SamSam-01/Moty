@@ -180,7 +180,7 @@ const styles = StyleSheet.create({
   cancelText: {
     ...theme.typography.body,
     color: theme.colors.primary,
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   content: {
     flex: 1,
@@ -234,7 +234,7 @@ const styles = StyleSheet.create({
     ...theme.typography.small,
     color: theme.colors.primary,
     marginBottom: 8,
-    fontWeight: '600',
+    fontWeight: '600' as const,
   },
   overview: {
     ...theme.typography.small,
