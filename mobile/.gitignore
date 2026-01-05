@@ -47,3 +47,4 @@ yarn-error.log*
 # Build
 build/
 # @end expo-cli
+.agent/

@@ -20,9 +20,7 @@ export default function GlassView({
     return (
         <View style={[styles.container, style]}>
             <BlurView intensity={intensity} tint={tint} style={StyleSheet.absoluteFill} />
-            <View style={styles.content}>
-                {children}
-            </View>
+            {children}
         </View>
     );
 }
@@ -34,7 +32,4 @@ const styles = StyleSheet.create({
         borderColor: 'rgba(255, 255, 255, 0.1)',
         borderWidth: 1,
     },
-    content: {
-        flex: 1,
-    }
 });
