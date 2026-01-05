@@ -46,13 +46,9 @@ export default function Auth() {
 
     return (
         <View style={styles.container}>
-            <LinearGradient
-                colors={[theme.colors.background, '#1e1b4b']}
-                style={StyleSheet.absoluteFill}
-            />
             <StatusBar style="light" />
 
-            <GlassView intensity={30} style={styles.card}>
+            <View style={styles.card}>
                 <Text style={styles.title}>Moty</Text>
                 <Text style={styles.subtitle}>Rank your movies</Text>
 
@@ -87,18 +83,13 @@ export default function Auth() {
                     disabled={loading}
                     activeOpacity={0.8}
                 >
-                    <LinearGradient
-                        colors={[theme.colors.primary, theme.colors.secondary]}
-                        style={styles.button}
-                        start={{ x: 0, y: 0 }}
-                        end={{ x: 1, y: 0 }}
-                    >
+                    <View style={styles.button}>
                         {loading ? (
                             <ActivityIndicator color="#fff" />
                         ) : (
                             <Text style={styles.buttonText}>{isLogin ? 'Sign In' : 'Sign Up'}</Text>
                         )}
-                    </LinearGradient>
+                    </View>
                 </TouchableOpacity>
 
                 <TouchableOpacity onPress={() => setIsLogin(!isLogin)} style={styles.switchButton}>
@@ -107,7 +98,7 @@ export default function Auth() {
                         <Text style={styles.switchTextBold}>{isLogin ? "Sign Up" : "Sign In"}</Text>
                     </Text>
                 </TouchableOpacity>
-            </GlassView>
+            </View>
         </View>
     );
 }
@@ -179,11 +170,13 @@ const styles = StyleSheet.create({
         height: 52,
         justifyContent: 'center',
         alignItems: 'center',
+        backgroundColor: theme.colors.primary,
+        borderRadius: theme.borderRadius.m,
     },
     buttonText: {
         ...theme.typography.h3,
         color: theme.colors.white,
-        fontWeight: 'bold',
+        fontWeight: '700' as const,
     },
     switchButton: {
         marginTop: theme.spacing.l,
@@ -196,6 +189,6 @@ const styles = StyleSheet.create({
     },
     switchTextBold: {
         color: theme.colors.primary,
-        fontWeight: '700',
+        fontWeight: '700' as const,
     },
 });

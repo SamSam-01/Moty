@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   },
   title: {
     ...theme.typography.body,
-    fontWeight: '700',
+    fontWeight: '700' as const,
     color: theme.colors.text.primary,
     marginBottom: 4,
     textShadowColor: 'rgba(0,0,0,0.5)',
