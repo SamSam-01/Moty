@@ -175,7 +175,18 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
 
       {/* Header */}
       <GlassView intensity={50} style={styles.header}>
-        <View style={styles.searchRow}>
+        <Text style={styles.headerTitle}>Search</Text>
+        <TouchableOpacity onPress={onClose} style={styles.closeButton}>
+          <X color={theme.colors.text.secondary} size={24} />
+        </TouchableOpacity>
+      </GlassView>
+
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        style={styles.content}
+      >
+        {/* Search Bar + Filter */}
+        <View style={styles.searchSection}>
           <View style={styles.searchBar}>
             <SearchIcon color={theme.colors.text.tertiary} size={20} style={styles.searchIcon} />
             <TextInput
@@ -184,7 +195,6 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
               onChangeText={setQuery}
               placeholder="Rechercher un film..."
               placeholderTextColor={theme.colors.text.tertiary}
-              autoFocus
               selectionColor={theme.colors.primary}
             />
             {query.length > 0 && (
@@ -203,17 +213,7 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
           >
             <Filter color={theme.colors.primary} size={20} />
           </TouchableOpacity>
-
-          <TouchableOpacity onPress={onClose} style={styles.closeButton}>
-            <X color={theme.colors.text.secondary} size={22} />
-          </TouchableOpacity>
         </View>
-      </GlassView>
-
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.content}
-      >
         {isLoading ? (
           <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -281,16 +281,38 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
   },
   header: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     paddingTop: 56,
     paddingBottom: theme.spacing.m,
     paddingHorizontal: theme.spacing.m,
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255,255,255,0.05)',
   },
-  searchRow: {
+  headerTitle: {
+    ...theme.typography.h1,
+    fontSize: 28,
+    color: theme.colors.text.primary,
+    fontWeight: '800' as const,
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  content: {
+    flex: 1,
+  },
+  searchSection: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: theme.spacing.s,
+    padding: theme.spacing.m,
+    paddingBottom: theme.spacing.s,
   },
   searchBar: {
     flex: 1,
