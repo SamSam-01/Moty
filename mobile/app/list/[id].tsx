@@ -23,6 +23,14 @@ import MovieFormModal from '../../components/movie/MovieFormModal';
 import MovieSearch from '../../components/movie/MovieSearch';
 import { Movie } from '../../types';
 
+// Pure function to get medal emoji based on rank
+const getMedalEmoji = (rank: number): string | null => {
+  if (rank === 1) return '🥇';
+  if (rank === 2) return '🥈';
+  if (rank === 3) return '🥉';
+  return null;
+};
+
 export default function ListDetailScreen() {
   const { id, title } = useLocalSearchParams<{ id: string; title: string }>();
 
@@ -51,28 +59,21 @@ export default function ListDetailScreen() {
     handleReorderMovies,
   } = useMovieItems(id);
 
-  const getMedalEmoji = (rank: number): string | null => {
-    if (rank === 1) return '🥇';
-    if (rank === 2) return '🥈';
-    if (rank === 3) return '🥉';
-    return null;
-  };
-
   const renderItem = useCallback(({ item, index, drag, isActive }: RenderItemParams<Movie>) => {
+    const medal = getMedalEmoji(item.rank);
+
     return (
       <MovieItem
         item={item}
-        index={index || 0}
+        index={(item.rank || 1) - 1}
         drag={drag}
         isActive={isActive}
-        medalEmoji={getMedalEmoji((index || 0) + 1)}
+        medalEmoji={medal}
         onEdit={openEditModal}
         onDelete={handleDeleteMovie}
-        itemCount={movies.length}
-        onDragEnd={() => { }} // Not needed for DraggableFlatList internal sort
       />
     );
-  }, [movies.length, openEditModal, handleDeleteMovie]);
+  }, [openEditModal, handleDeleteMovie]);
 
   return (
     <View style={styles.container}>
