@@ -2,20 +2,17 @@
 import React from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   FlatList,
   StatusBar,
-  SafeAreaView,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Plus, LogOut } from 'lucide-react-native';
-import { useMovieLists } from '../hooks/useMovieLists';
-import ListCard from '../components/list/ListCard';
-import ListFormModal from '../components/list/ListFormModal';
-import { theme } from '../constants/theme';
-import GlassView from '../components/ui/GlassView';
+import { useMovieLists, ListCard, ListFormModal } from '../src/features/lists';
+import { theme } from '../src/theme';
+import GlassView from '../src/components/ui/GlassView';
+import Typography from '../src/components/ui/Typography';
 import { LinearGradient } from 'expo-linear-gradient';
 import Animated, {
   useAnimatedScrollHandler,
@@ -81,7 +78,7 @@ export default function HomeScreen() {
       <Animated.View style={[styles.stickyHeader, headerStyle]}>
         <GlassView intensity={80} style={StyleSheet.absoluteFill} />
         <View style={styles.headerContent}>
-          <Text style={styles.headerTitleSmall}>My Rankings</Text>
+          <Typography variant="h3" style={styles.headerTitleSmall}>My Rankings</Typography>
           <TouchableOpacity onPress={signOut} style={styles.iconButton}>
             <LogOut color={theme.colors.text.primary} size={20} />
           </TouchableOpacity>
@@ -90,7 +87,7 @@ export default function HomeScreen() {
 
       <AnimatedFlatList
         data={lists}
-        renderItem={({ item, index }) => (
+        renderItem={({ item, index }: { item: any, index: number }) => (
           <ListCard
             list={item}
             index={index}
@@ -99,7 +96,7 @@ export default function HomeScreen() {
             onDelete={handleDeleteList}
           />
         )}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item: any) => item.id}
         contentContainerStyle={styles.listContainer}
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
@@ -110,24 +107,24 @@ export default function HomeScreen() {
           <View style={styles.largeHeader}>
             <View style={styles.largeHeaderTop}>
               <View>
-                <Text style={styles.greeting}>Welcome back</Text>
-                <Text style={styles.headerTitleLarge}>My Rankings</Text>
+                <Typography variant="caption" style={styles.greeting}>Welcome back</Typography>
+                <Typography variant="h1" style={styles.headerTitleLarge}>My Rankings</Typography>
               </View>
               <TouchableOpacity onPress={signOut} style={styles.logoutButtonLarge}>
                 <LogOut color={theme.colors.text.secondary} size={24} />
               </TouchableOpacity>
             </View>
-            <Text style={styles.subtitle}>
+            <Typography variant="body" style={styles.subtitle}>
               {lists.length} {lists.length === 1 ? 'Collection' : 'Collections'}
-            </Text>
+            </Typography>
           </View>
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
-            <Text style={styles.emptyStateText}>Start your collection</Text>
-            <Text style={styles.emptyStateSubtext}>
+            <Typography variant="h3" style={styles.emptyStateText}>Start your collection</Typography>
+            <Typography variant="body" style={styles.emptyStateSubtext}>
               Create your first list to start ranking movies!
-            </Text>
+            </Typography>
           </View>
         }
       />
@@ -194,7 +191,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.l,
   },
   headerTitleSmall: {
-    ...theme.typography.h3,
     color: theme.colors.text.primary,
   },
   iconButton: {
@@ -217,19 +213,16 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.round,
   },
   greeting: {
-    ...theme.typography.caption,
     color: theme.colors.primary,
-    fontWeight: '700' as const,
+    fontWeight: '700',
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: theme.spacing.xs,
   },
   headerTitleLarge: {
-    ...theme.typography.h1,
     color: theme.colors.text.primary,
   },
   subtitle: {
-    ...theme.typography.body,
     color: theme.colors.text.secondary,
     marginTop: theme.spacing.xs,
   },
@@ -243,12 +236,10 @@ const styles = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.05)',
   },
   emptyStateText: {
-    ...theme.typography.h3,
     color: theme.colors.text.primary,
     marginBottom: theme.spacing.s,
   },
   emptyStateSubtext: {
-    ...theme.typography.body,
     color: theme.colors.text.secondary,
     textAlign: 'center',
   },

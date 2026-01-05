@@ -2,7 +2,6 @@
 import { useState, useCallback } from 'react';
 import {
   View,
-  Text,
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
@@ -12,16 +11,14 @@ import {
 import { useLocalSearchParams, router } from 'expo-router';
 import { ArrowLeft, Plus, Search } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { useMovieItems } from '../../hooks/useMovieItems';
-import { theme } from '../../constants/theme';
-import GlassView from '../../components/ui/GlassView';
+import { useMovieItems, MovieItem, MovieFormModal, MovieSearch } from '../../src/features/movies';
+import { theme } from '../../src/theme';
+import GlassView from '../../src/components/ui/GlassView';
+import Typography from '../../src/components/ui/Typography';
 import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
-import MovieItem from '../../components/movie/MovieItem';
-import MovieFormModal from '../../components/movie/MovieFormModal';
-import MovieSearch from '../../components/movie/MovieSearch';
-import { Movie } from '../../types';
+import { Movie } from '../../src/types';
 
 // Pure function to get medal emoji based on rank
 const getMedalEmoji = (rank: number): string | null => {
@@ -59,7 +56,8 @@ export default function ListDetailScreen() {
     handleReorderMovies,
   } = useMovieItems(id);
 
-  const renderItem = useCallback(({ item, index, drag, isActive }: RenderItemParams<Movie>) => {
+  const renderItem = useCallback(({ item, getIndex, drag, isActive }: RenderItemParams<Movie>) => {
+    const index = getIndex();
     const medal = getMedalEmoji(item.rank);
 
     return (
@@ -92,9 +90,9 @@ export default function ListDetailScreen() {
           >
             <ArrowLeft color={theme.colors.text.primary} size={24} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle} numberOfLines={1}>
-            {title}
-          </Text>
+          <Typography variant="h3" style={styles.headerTitle} numberOfLines={1}>
+            {Array.isArray(title) ? title[0] : (title || 'List Details')}
+          </Typography>
           <View style={styles.headerRight} />
         </View>
       </GlassView>
@@ -107,12 +105,12 @@ export default function ListDetailScreen() {
         ) : movies.length === 0 ? (
           <View style={styles.centerContainer}>
             <GlassView intensity={20} style={styles.emptyState}>
-              <Text style={styles.emptyStateText}>
+              <Typography variant="h3" style={styles.emptyStateText}>
                 No movies yet
-              </Text>
-              <Text style={styles.emptyStateSubtext}>
+              </Typography>
+              <Typography variant="body" style={styles.emptyStateSubtext}>
                 Tap the + button to start ranking!
-              </Text>
+              </Typography>
             </GlassView>
           </View>
         ) : (
@@ -231,7 +229,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255,0.1)',
   },
   headerTitle: {
-    ...theme.typography.h3,
     color: theme.colors.text.primary,
     textAlign: 'center',
     flex: 1,
@@ -260,12 +257,10 @@ const styles = StyleSheet.create({
     width: '100%',
   },
   emptyStateText: {
-    ...theme.typography.h3,
     color: theme.colors.text.primary,
     marginBottom: theme.spacing.s,
   },
   emptyStateSubtext: {
-    ...theme.typography.body,
     color: theme.colors.text.secondary,
     textAlign: 'center',
   },
