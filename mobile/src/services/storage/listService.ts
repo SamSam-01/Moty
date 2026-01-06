@@ -1,6 +1,7 @@
 
 import { supabase } from '../../lib/supabase';
 import { MovieList } from '../../types';
+import { MovieFilters } from '../api/movieApi';
 
 export const listService = {
   async getLists(): Promise<MovieList[]> {
@@ -12,14 +13,16 @@ export const listService = {
     if (error) throw error;
 
     return data.map(item => ({
-      id: item.id,
+      id: item.id.toString(),
       title: item.name, // Map 'name' from DB to 'title' in app
       imageUrl: item.image_url,
+      color: item.color,
+      filters: item.filters,
       createdAt: new Date(item.created_at).getTime(),
     }));
   },
 
-  async addList(title: string): Promise<void> {
+  async addList(title: string, color?: string, filters?: MovieFilters): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not found');
 
@@ -28,15 +31,21 @@ export const listService = {
       .insert({
         name: title, // Use 'name' column
         user_id: user.id,
+        color,
+        filters,
       });
 
     if (error) throw error;
   },
 
-  async updateList(id: string, title: string): Promise<void> {
+  async updateList(id: string, title: string, color?: string, filters?: MovieFilters): Promise<void> {
     const { error } = await supabase
       .from('lists')
-      .update({ name: title }) // Use 'name' column
+      .update({
+        name: title, // Use 'name' column
+        color,
+        filters,
+      })
       .eq('id', id);
 
     if (error) throw error;

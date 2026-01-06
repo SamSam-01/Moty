@@ -22,32 +22,54 @@ import * as Haptics from 'expo-haptics';
 import SearchFilters from './SearchFilters';
 
 interface MovieSearchProps {
+
     onSelectMovie: (movie: TMDBMovie) => void;
     onClose: () => void;
+    imposedFilters?: MovieFilters;
 }
 
-export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps) {
+export default function MovieSearch({ onSelectMovie, onClose, imposedFilters }: MovieSearchProps) {
     const [query, setQuery] = useState('');
     const [results, setResults] = useState<TMDBMovie[]>([]);
     const [trendingMovies, setTrendingMovies] = useState<TMDBMovie[]>([]);
     const [genres, setGenres] = useState<TMDBGenre[]>([]);
     const [isLoading, setIsLoading] = useState(false);
+
     const [error, setError] = useState<string | null>(null);
-    const [filters, setFilters] = useState<MovieFilters>({});
+    const [filters, setFilters] = useState<MovieFilters>(imposedFilters || {});
+
+    // Ensure filters update if imposedFilters changes
+    useEffect(() => {
+        if (imposedFilters) {
+            setFilters(imposedFilters);
+        }
+    }, [imposedFilters]);
     const [sortBy, setSortBy] = useState<MovieFilters['sortBy']>('popularity.desc');
     const [showFilters, setShowFilters] = useState(false);
 
     useEffect(() => {
+        if (imposedFilters) {
+            setFilters(imposedFilters);
+        }
+    }, [imposedFilters]);
+
+    useEffect(() => {
         loadTrendingMovies();
         loadGenres();
-    }, []);
+    }, [filters]); // Reload when filters change (initial load or imposed)
 
     const loadTrendingMovies = async () => {
         try {
-            const trending = await movieApi.getTrendingMovies();
-            setTrendingMovies(trending);
+            // If we have filters, discover movies instead of generic trending
+            if (Object.keys(filters).length > 0) {
+                const discovered = await movieApi.discoverMovies(filters);
+                setTrendingMovies(discovered);
+            } else {
+                const trending = await movieApi.getTrendingMovies();
+                setTrendingMovies(trending);
+            }
         } catch (err) {
-            console.error('Failed to load trending movies', err);
+            console.error('Failed to load trending/discovered movies', err);
         }
     };
 
@@ -172,7 +194,14 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
             />
 
             <GlassView intensity={50} style={styles.header}>
-                <Typography variant="h2" style={styles.headerTitle}>Search</Typography>
+                <View>
+                    <Typography variant="h2" style={styles.headerTitle}>Search</Typography>
+                    {imposedFilters && (
+                        <Typography variant="caption" style={styles.imposedFilterText}>
+                            Filters applied: {imposedFilters.year ? `Year ${imposedFilters.year}` : ''} {imposedFilters.genres?.length ? `+ ${imposedFilters.genres.length} Genres` : ''}
+                        </Typography>
+                    )}
+                </View>
                 <TouchableOpacity onPress={onClose} style={styles.closeButton}>
                     <X color={theme.colors.text.secondary} size={24} />
                 </TouchableOpacity>
@@ -202,10 +231,15 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
 
                     <TouchableOpacity
                         onPress={() => {
+                            if (imposedFilters) {
+                                // Maybe show an alert or toast saying filters are locked by the list settings
+                                return;
+                            }
                             Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
                             setShowFilters(true);
                         }}
-                        style={styles.filterButton}
+                        style={[styles.filterButton, imposedFilters && styles.filterButtonDisabled]}
+                        disabled={!!imposedFilters}
                     >
                         <Filter color={theme.colors.primary} size={20} />
                     </TouchableOpacity>
@@ -222,7 +256,9 @@ export default function MovieSearch({ onSelectMovie, onClose }: MovieSearchProps
                     </View>
                 ) : showTrending ? (
                     <View style={styles.trendingContainer}>
-                        <Typography variant="h2" style={styles.sectionTitle}>🔥 Films du moment</Typography>
+                        <Typography variant="h2" style={styles.sectionTitle}>
+                            {Object.keys(filters).length > 0 ? '✨ Recommandés pour vous' : '🔥 Films du moment'}
+                        </Typography>
                         <FlatList
                             data={trendingMovies}
                             keyExtractor={(item) => item.id.toString()}
@@ -501,5 +537,14 @@ const styles = StyleSheet.create({
         color: '#FBBF24',
         fontWeight: '600',
         fontSize: 11,
+    },
+    filterButtonDisabled: {
+        opacity: 0.5,
+    },
+    imposedFilterText: {
+        color: theme.colors.primary,
+        fontSize: 12,
+        fontWeight: '600',
+        marginTop: 4,
     },
 });

@@ -1,8 +1,12 @@
+import { MovieFilters } from '../services/api/movieApi';
+
 export interface MovieList {
   id: string;
   title: string;
   createdAt: number;
   imageUrl?: string;
+  color?: string;
+  filters?: MovieFilters;
 }
 
 export interface Movie {

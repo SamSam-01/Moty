@@ -49,7 +49,7 @@ export const movieApi = {
 
       // Appliquer les filtres si fournis
       if (filters?.year) {
-        params.year = filters.year;
+        params.primary_release_year = filters.year;
       }
       if (filters?.minRating) {
         params['vote_average.gte'] = filters.minRating;
@@ -102,7 +102,7 @@ export const movieApi = {
       };
 
       if (filters?.year) {
-        params.year = filters.year;
+        params.primary_release_year = filters.year;
       }
       if (filters?.minRating) {
         params['vote_average.gte'] = filters.minRating;

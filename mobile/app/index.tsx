@@ -31,6 +31,10 @@ export default function HomeScreen() {
     isEditing,
     title,
     setTitle,
+    color,
+    setColor,
+    filters,
+    setFilters,
 
     formError,
     openCreateModal,
@@ -157,6 +161,10 @@ export default function HomeScreen() {
         onSubmit={isEditing ? handleUpdateList : handleCreateList}
         onCancel={closeModals}
         isEditing={isEditing}
+        color={color}
+        setColor={setColor}
+        filters={filters}
+        setFilters={setFilters}
       />
     </View>
   );

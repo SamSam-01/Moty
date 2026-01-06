@@ -35,9 +35,19 @@ export default function ListCard({ list, onPress, onEdit, onDelete, index = 0 }:
             <TouchableOpacity
                 activeOpacity={0.9}
                 onPress={() => onPress(list.id, list.title)}
-                style={styles.card}
+                style={[
+                    styles.card,
+                    list.color ? { borderColor: list.color } : undefined
+                ]}
             >
-                <GlassView style={styles.glassContent} intensity={20}>
+                <GlassView
+                    style={styles.glassContent}
+                    intensity={20}
+                    tint={list.color ? 'dark' : 'default'} // Subtle change
+                >
+                    {list.color && (
+                        <View style={[styles.colorIndicator, { backgroundColor: list.color }]} />
+                    )}
                     <View style={styles.content}>
                         <Typography variant="h3" style={styles.title} numberOfLines={3}>
                             {list.title}
@@ -109,5 +119,13 @@ const styles = StyleSheet.create({
     actionIcon: {
         padding: 4,
         opacity: 0.8,
+    },
+    colorIndicator: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        position: 'absolute',
+        top: 10,
+        right: 10,
     },
 });
