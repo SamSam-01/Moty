@@ -2,7 +2,6 @@
 import { useState, useEffect } from 'react';
 import { useAppContext } from '../../../context/AppContext';
 import { Movie } from '../../../types';
-import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native';
 import { TMDBMovie, movieApi } from '../../../services/api/movieApi';
 
@@ -67,26 +66,6 @@ export function useMovieItems(listId: string) {
         setNotes('');
         setImageUrl(undefined);
         setFormError(null);
-    };
-
-    const pickImage = async () => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-        if (status !== 'granted') {
-            Alert.alert('Permission Required', 'Sorry, we need camera roll permissions to make this work!');
-            return;
-        }
-
-        let result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            allowsEditing: true,
-            aspect: [1, 1],
-            quality: 0.8,
-        });
-
-        if (!result.canceled && result.assets && result.assets.length > 0) {
-            setImageUrl(result.assets[0].uri);
-        }
     };
 
     const handleCreateMovie = async () => {
@@ -220,7 +199,6 @@ export function useMovieItems(listId: string) {
         openSearchModal,
         openEditModal,
         closeModals,
-        pickImage,
         handleCreateMovie,
         handleSelectTMDBMovie,
         handleUpdateMovie,

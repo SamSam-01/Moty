@@ -2,7 +2,6 @@
 import React from 'react';
 import {
     View,
-    TouchableOpacity,
     Image,
     StyleSheet,
     ScrollView,
@@ -25,7 +24,6 @@ interface MovieFormModalProps {
     onChangeNotes: (text: string) => void;
     onSubmit: () => void;
     onCancel: () => void;
-    onPickImage: () => void;
     isEditing?: boolean;
 }
 
@@ -40,7 +38,6 @@ export default function MovieFormModal({
     onChangeNotes,
     onSubmit,
     onCancel,
-    onPickImage,
     isEditing = false,
 }: MovieFormModalProps) {
     return (
@@ -50,22 +47,12 @@ export default function MovieFormModal({
             title={title}
         >
             <ScrollView showsVerticalScrollIndicator={false}>
-                <TouchableOpacity
-                    style={styles.imagePicker}
-                    onPress={onPickImage}
-                    activeOpacity={0.8}
-                >
-                    {imageUrl ? (
+                {/* Only show image if it exists (e.g. from TMDB) */}
+                {imageUrl && (
+                    <View style={styles.imageContainer}>
                         <Image source={{ uri: imageUrl }} style={styles.previewImage} />
-                    ) : (
-                        <View style={styles.placeholder}>
-                            <Typography style={styles.placeholderText}>Tap to add poster</Typography>
-                        </View>
-                    )}
-                    <View style={styles.imageOverlay}>
-                        <Typography variant="small" style={styles.imageEditLabel}>Edit Poster</Typography>
                     </View>
-                </TouchableOpacity>
+                )}
 
                 <Input
                     label="Movie Title"
@@ -108,7 +95,7 @@ export default function MovieFormModal({
 }
 
 const styles = StyleSheet.create({
-    imagePicker: {
+    imageContainer: {
         height: 180,
         borderRadius: theme.borderRadius.m,
         overflow: 'hidden',
@@ -121,34 +108,6 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '100%',
         resizeMode: 'cover',
-    },
-    placeholder: {
-        flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 2,
-        borderColor: 'rgba(255,255,255,0.1)',
-        borderStyle: 'dashed',
-        borderRadius: theme.borderRadius.m,
-    },
-    placeholderText: {
-        color: theme.colors.text.secondary,
-        textAlign: 'center',
-        fontSize: 12,
-    },
-    imageOverlay: {
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        padding: 4,
-        alignItems: 'center',
-    },
-    imageEditLabel: {
-        color: theme.colors.text.primary,
-        fontSize: 10,
-        fontWeight: '600',
     },
     formGroup: {
         marginBottom: theme.spacing.m,
