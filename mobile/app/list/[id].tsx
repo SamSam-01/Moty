@@ -13,6 +13,7 @@ import { ArrowLeft, Plus, Search } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMovieItems, MovieItem, MovieFormModal, MovieSearch } from '../../src/features/movies';
 import { theme } from '../../src/theme';
+import { useAppContext } from '../../src/context/AppContext';
 import GlassView from '../../src/components/ui/GlassView';
 import Typography from '../../src/components/ui/Typography';
 import DraggableFlatList, {
@@ -30,6 +31,8 @@ const getMedalEmoji = (rank: number): string | null => {
 
 export default function ListDetailScreen() {
   const { id, title } = useLocalSearchParams<{ id: string; title: string }>();
+  const { lists } = useAppContext();
+  const currentList = lists.find(list => list.id === id);
 
   const {
     movies,
@@ -194,6 +197,7 @@ export default function ListDetailScreen() {
           <MovieSearch
             onSelectMovie={handleSelectTMDBMovie}
             onClose={closeModals}
+            imposedFilters={currentList?.filters}
           />
         </Modal>
       )}

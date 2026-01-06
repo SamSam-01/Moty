@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAppContext } from '../../../context/AppContext';
 import { MovieList } from '../../../types';
+import { MovieFilters } from '../../../services/api/movieApi';
 import { Alert } from 'react-native';
 
 export function useMovieLists() {
@@ -9,10 +10,14 @@ export function useMovieLists() {
   const [isEditing, setIsEditing] = useState(false);
   const [currentList, setCurrentList] = useState<MovieList | null>(null);
   const [title, setTitle] = useState('');
+  const [color, setColor] = useState<string | undefined>(undefined);
+  const [filters, setFilters] = useState<MovieFilters | undefined>(undefined);
   const [formError, setFormError] = useState<string | null>(null);
 
   const openCreateModal = () => {
     setTitle('');
+    setColor(undefined);
+    setFilters(undefined);
     setFormError(null);
     setIsCreating(true);
   };
@@ -20,6 +25,8 @@ export function useMovieLists() {
   const openEditModal = (list: MovieList) => {
     setCurrentList(list);
     setTitle(list.title);
+    setColor(list.color);
+    setFilters(list.filters);
     setFormError(null);
     setIsEditing(true);
   };
@@ -29,6 +36,8 @@ export function useMovieLists() {
     setIsEditing(false);
     setCurrentList(null);
     setTitle('');
+    setColor(undefined);
+    setFilters(undefined);
     setFormError(null);
   };
 
@@ -41,6 +50,8 @@ export function useMovieLists() {
     try {
       await addList({
         title: title.trim(),
+        color,
+        filters,
       });
       closeModals();
     } catch (error) {
@@ -60,6 +71,8 @@ export function useMovieLists() {
       await updateList({
         ...currentList,
         title: title.trim(),
+        color,
+        filters,
       });
       closeModals();
     } catch (error) {
@@ -98,6 +111,10 @@ export function useMovieLists() {
     currentList,
     title,
     setTitle,
+    color,
+    setColor,
+    filters,
+    setFilters,
     formError,
     openCreateModal,
     openEditModal,
