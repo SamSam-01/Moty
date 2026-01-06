@@ -48,7 +48,7 @@ export default function ListDetailScreen() {
     openSearchModal,
     openEditModal,
     closeModals,
-    pickImage,
+
     handleCreateMovie,
     handleSelectTMDBMovie,
     handleUpdateMovie,
@@ -166,7 +166,6 @@ export default function ListDetailScreen() {
         onChangeNotes={setNotes}
         onSubmit={handleCreateMovie}
         onCancel={closeModals}
-        onPickImage={pickImage}
       />
 
       {/* Edit Movie Modal */}
@@ -181,7 +180,6 @@ export default function ListDetailScreen() {
         onChangeNotes={setNotes}
         onSubmit={handleUpdateMovie}
         onCancel={closeModals}
-        onPickImage={pickImage}
         isEditing
       />
 

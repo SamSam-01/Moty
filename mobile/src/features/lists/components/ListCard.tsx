@@ -3,11 +3,9 @@ import React from 'react';
 import {
     StyleSheet,
     TouchableOpacity,
-    ImageBackground,
     Dimensions,
     View,
 } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Edit2, Trash2 } from 'lucide-react-native';
 import Animated, { FadeInUp } from 'react-native-reanimated';
 import { MovieList } from '../../../types';
@@ -26,7 +24,7 @@ interface ListCardProps {
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 const COLUMN_SPACING = theme.spacing.m;
 const CARD_WIDTH = (SCREEN_WIDTH - (theme.spacing.m * 3)) / 2;
-const CARD_HEIGHT = CARD_WIDTH * 1.5;
+const CARD_HEIGHT = CARD_WIDTH * 1.2; // Slightly shorter than before since no image
 
 export default function ListCard({ list, onPress, onEdit, onDelete, index = 0 }: ListCardProps) {
     return (
@@ -39,41 +37,33 @@ export default function ListCard({ list, onPress, onEdit, onDelete, index = 0 }:
                 onPress={() => onPress(list.id, list.title)}
                 style={styles.card}
             >
-                <ImageBackground
-                    source={{ uri: list.imageUrl || 'https://reactnative.dev/img/tiny_logo.png' }}
-                    style={styles.imageBackground}
-                    imageStyle={styles.image}
-                >
-                    <LinearGradient
-                        colors={['transparent', 'transparent', theme.colors.background]}
-                        locations={[0, 0.5, 1]}
-                        style={styles.gradient}
-                    />
-
+                <GlassView style={styles.glassContent} intensity={20}>
                     <View style={styles.content}>
-                        <GlassView style={styles.glassContainer} intensity={40}>
-                            <Typography variant="body" style={styles.title} numberOfLines={2}>
-                                {list.title}
-                            </Typography>
-                            <Typography variant="small" style={styles.date}>
-                                {new Date(list.createdAt).toLocaleDateString()}
-                            </Typography>
-                        </GlassView>
+                        <Typography variant="h3" style={styles.title} numberOfLines={3}>
+                            {list.title}
+                        </Typography>
+                        <Typography variant="small" style={styles.date}>
+                            {new Date(list.createdAt).toLocaleDateString()}
+                        </Typography>
                     </View>
 
                     <View style={styles.actions}>
-                        <GlassView style={styles.actionButton} intensity={60}>
-                            <TouchableOpacity onPress={() => onEdit(list)} hitSlop={10}>
-                                <Edit2 color={theme.colors.text.primary} size={14} />
-                            </TouchableOpacity>
-                        </GlassView>
-                        <GlassView style={styles.actionButton} intensity={60}>
-                            <TouchableOpacity onPress={() => onDelete(list.id)} hitSlop={10}>
-                                <Trash2 color={theme.colors.error} size={14} />
-                            </TouchableOpacity>
-                        </GlassView>
+                        <TouchableOpacity
+                            onPress={() => onEdit(list)}
+                            hitSlop={10}
+                            style={styles.actionIcon}
+                        >
+                            <Edit2 color={theme.colors.text.secondary} size={16} />
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => onDelete(list.id)}
+                            hitSlop={10}
+                            style={styles.actionIcon}
+                        >
+                            <Trash2 color={theme.colors.error} size={16} />
+                        </TouchableOpacity>
                     </View>
-                </ImageBackground>
+                </GlassView>
             </TouchableOpacity>
         </Animated.View>
     );
@@ -88,56 +78,36 @@ const styles = StyleSheet.create({
         height: CARD_HEIGHT,
         borderRadius: theme.borderRadius.m,
         overflow: 'hidden',
-        backgroundColor: theme.colors.surface,
-        elevation: 8,
-        shadowColor: theme.colors.primary,
-        shadowOffset: { width: 0, height: 4 },
-        shadowOpacity: 0.3,
-        shadowRadius: 12,
+        backgroundColor: theme.colors.surface, // Fallback
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.1)',
     },
-    imageBackground: {
+    glassContent: {
         flex: 1,
-        justifyContent: 'flex-end',
-    },
-    image: {
-        borderRadius: theme.borderRadius.m,
-    },
-    gradient: {
-        ...StyleSheet.absoluteFillObject,
+        padding: theme.spacing.m,
     },
     content: {
-        padding: theme.spacing.s,
-    },
-    glassContainer: {
-        borderRadius: theme.borderRadius.s,
-        padding: theme.spacing.s,
-        borderWidth: 0,
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
     },
     title: {
-        fontWeight: '700',
+        textAlign: 'center',
+        marginBottom: theme.spacing.s,
         color: theme.colors.text.primary,
-        marginBottom: 4,
-        textShadowColor: 'rgba(0,0,0,0.5)',
-        textShadowOffset: { width: 0, height: 1 },
-        textShadowRadius: 2,
     },
     date: {
         color: theme.colors.text.secondary,
+        opacity: 0.7,
     },
     actions: {
-        position: 'absolute',
-        top: theme.spacing.s,
-        right: theme.spacing.s,
-        gap: theme.spacing.xs,
+        flexDirection: 'row',
+        justifyContent: 'flex-end',
+        gap: theme.spacing.s,
+        marginTop: theme.spacing.s,
     },
-    actionButton: {
-        width: 28,
-        height: 28,
-        borderRadius: 14,
-        justifyContent: 'center',
-        alignItems: 'center',
-        borderWidth: 0,
+    actionIcon: {
+        padding: 4,
+        opacity: 0.8,
     },
 });

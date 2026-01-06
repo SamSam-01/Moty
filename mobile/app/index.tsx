@@ -31,12 +31,12 @@ export default function HomeScreen() {
     isEditing,
     title,
     setTitle,
-    imageUrl,
+
     formError,
     openCreateModal,
     openEditModal,
     closeModals,
-    pickImage,
+
     handleCreateList,
     handleUpdateList,
     handleDeleteList,
@@ -149,12 +149,10 @@ export default function HomeScreen() {
         visible={isCreating || isEditing}
         title={isEditing ? "Edit List" : "New Collection"}
         value={title}
-        imageUrl={imageUrl}
         error={formError}
         onChangeText={setTitle}
         onSubmit={isEditing ? handleUpdateList : handleCreateList}
         onCancel={closeModals}
-        onPickImage={pickImage}
         isEditing={isEditing}
       />
     </View>
