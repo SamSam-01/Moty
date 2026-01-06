@@ -8,7 +8,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Plus, LogOut } from 'lucide-react-native';
+import { Plus, User } from 'lucide-react-native';
 import { useMovieLists, ListCard, ListFormModal } from '../src/features/lists';
 import { theme } from '../src/theme';
 import GlassView from '../src/components/ui/GlassView';
@@ -40,7 +40,6 @@ export default function HomeScreen() {
     handleCreateList,
     handleUpdateList,
     handleDeleteList,
-    signOut,
   } = useMovieLists();
 
   const scrollY = useSharedValue(0);
@@ -64,6 +63,10 @@ export default function HomeScreen() {
     });
   };
 
+  const navigateToProfile = () => {
+    router.push('/profile');
+  };
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -79,8 +82,8 @@ export default function HomeScreen() {
         <GlassView intensity={80} style={StyleSheet.absoluteFill} />
         <View style={styles.headerContent}>
           <Typography variant="h3" style={styles.headerTitleSmall}>My Rankings</Typography>
-          <TouchableOpacity onPress={signOut} style={styles.iconButton}>
-            <LogOut color={theme.colors.text.primary} size={20} />
+          <TouchableOpacity onPress={navigateToProfile} style={styles.iconButton}>
+            <User color={theme.colors.text.primary} size={20} />
           </TouchableOpacity>
         </View>
       </Animated.View>
@@ -110,8 +113,8 @@ export default function HomeScreen() {
                 <Typography variant="caption" style={styles.greeting}>Welcome back</Typography>
                 <Typography variant="h1" style={styles.headerTitleLarge}>My Rankings</Typography>
               </View>
-              <TouchableOpacity onPress={signOut} style={styles.logoutButtonLarge}>
-                <LogOut color={theme.colors.text.secondary} size={24} />
+              <TouchableOpacity onPress={navigateToProfile} style={styles.logoutButtonLarge}>
+                <User color={theme.colors.text.secondary} size={24} />
               </TouchableOpacity>
             </View>
             <Typography variant="body" style={styles.subtitle}>
@@ -240,6 +243,7 @@ const styles = StyleSheet.create({
   emptyStateSubtext: {
     color: theme.colors.text.secondary,
     textAlign: 'center',
+    fontSize: 14,
   },
   fab: {
     position: 'absolute',
