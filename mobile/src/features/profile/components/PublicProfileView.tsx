@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity } from 'react-native';
-import { Pin, Lock } from 'lucide-react-native';
+import { Pin, Lock, UserPlus, UserMinus, UserCheck } from 'lucide-react-native';
+import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../../../theme';
 import GlassView from '../../../components/ui/GlassView';
@@ -163,7 +164,10 @@ export default function PublicProfileView({
                                     key={list.id}
                                     list={list}
                                     index={index}
-                                    onPress={() => { }} // Navigate to list details (if implemented)
+                                    onPress={() => router.push({
+                                        pathname: '/list/[id]',
+                                        params: { id: list.id, title: list.title, readonly: 'true' }
+                                    })}
                                     onEdit={() => { }}
                                     onDelete={() => { }}
                                     readonly={true}
@@ -230,6 +234,8 @@ const styles = StyleSheet.create({
         color: theme.colors.text.primary,
     },
     pinnedListContainer: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
         gap: theme.spacing.m,
     },
     statsContainer: {

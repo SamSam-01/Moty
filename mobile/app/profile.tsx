@@ -81,8 +81,6 @@ export default function ProfileScreen() {
                     onPodiumPress={(rank) => router.push(`/movie-search?rank=${rank}`)}
                 />
 
-                {/* Friend Requests Section */}
-
 
                 <Button
                     title="Edit Profile & Settings"
