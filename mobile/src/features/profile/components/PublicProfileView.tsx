@@ -20,6 +20,8 @@ interface PublicProfileViewProps {
         isFollowing: boolean;
         isPending: boolean;
     };
+    onFollowersPress?: () => void;
+    onFollowingPress?: () => void;
 }
 
 export default function PublicProfileView({
@@ -29,6 +31,8 @@ export default function PublicProfileView({
     onFollow,
     onUnfollow,
     stats,
+    onFollowersPress,
+    onFollowingPress,
 }: PublicProfileViewProps) {
     const isPublic = profile?.is_public ?? true;
     const canViewLists = isPublic || stats?.isFollowing || isOwner;
@@ -85,15 +89,15 @@ export default function PublicProfileView({
 
                 {/* Stats & Actions */}
                 <View style={styles.statsContainer}>
-                    <View style={styles.statItem}>
+                    <TouchableOpacity onPress={onFollowersPress} style={styles.statItem}>
                         <Typography variant="h3" style={styles.statValue}>{stats?.followers || 0}</Typography>
                         <Typography variant="caption" style={styles.statLabel}>Followers</Typography>
-                    </View>
+                    </TouchableOpacity>
                     <View style={styles.divider} />
-                    <View style={styles.statItem}>
+                    <TouchableOpacity onPress={onFollowingPress} style={styles.statItem}>
                         <Typography variant="h3" style={styles.statValue}>{stats?.following || 0}</Typography>
                         <Typography variant="caption" style={styles.statLabel}>Following</Typography>
-                    </View>
+                    </TouchableOpacity>
                 </View>
 
                 {!isOwner && (

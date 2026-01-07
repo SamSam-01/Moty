@@ -65,6 +65,8 @@ export default function ProfileScreen() {
                         following: followStats.followingCount,
                         isFollowing: false // Not relevant for owner
                     } : undefined}
+                    onFollowersPress={() => router.push(`/user/${session?.user?.id}/network?type=followers`)}
+                    onFollowingPress={() => router.push(`/user/${session?.user?.id}/network?type=following`)}
                 />
 
                 {/* Friend Requests Section */}

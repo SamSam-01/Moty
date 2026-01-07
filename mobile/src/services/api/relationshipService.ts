@@ -226,5 +226,64 @@ export const relationshipService = {
             .eq('is_seen', false);
 
         if (error) throw error;
+    },
+
+    async getFollowers(userId: string): Promise<PendingRequest[]> {
+        const { data, error } = await supabase
+            .from('relationships')
+            .select(`
+                id,
+                created_at,
+                follower:profiles!follower_id (
+                    id,
+                    username,
+                    avatar_url
+                )
+            `)
+            .eq('following_id', userId)
+            .eq('status', 'accepted')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        return (data || []).map((item: any) => ({
+            id: item.id,
+            created_at: item.created_at,
+            follower: {
+                id: item.follower.id,
+                username: item.follower.username,
+                avatar_url: item.follower.avatar_url,
+            }
+        }));
+    },
+
+    async getFollowing(userId: string): Promise<PendingRequest[]> {
+        const { data, error } = await supabase
+            .from('relationships')
+            .select(`
+                id,
+                created_at,
+                following:profiles!following_id (
+                    id,
+                    username,
+                    avatar_url
+                )
+            `)
+            .eq('follower_id', userId)
+            .eq('status', 'accepted')
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        // Map to same structure but use 'following' as the user object
+        return (data || []).map((item: any) => ({
+            id: item.id,
+            created_at: item.created_at,
+            follower: { // reusing 'follower' key for generic 'user' display in UI to keep type simple
+                id: item.following.id,
+                username: item.following.username,
+                avatar_url: item.following.avatar_url,
+            }
+        }));
     }
 };

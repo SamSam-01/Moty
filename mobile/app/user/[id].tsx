@@ -177,6 +177,8 @@ export default function PublicProfileScreen() {
                     isOwner={currentUserId === id}
                     onFollow={handleFollow}
                     onUnfollow={handleUnfollow}
+                    onFollowersPress={() => router.push(`/user/${id}/network?type=followers`)}
+                    onFollowingPress={() => router.push(`/user/${id}/network?type=following`)}
                 />
             </ScrollView>
         </View>
