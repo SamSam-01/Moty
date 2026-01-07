@@ -53,7 +53,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const addList = async (listData: Omit<MovieList, 'id' | 'createdAt'>) => {
     try {
       setError(null);
-      await listService.addList(listData.title, listData.color, listData.filters);
+      await listService.addList(listData.title, listData.color, listData.filters, listData.isPinned);
       await refreshLists();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to add list');
@@ -64,7 +64,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const updateList = async (updatedList: MovieList) => {
     try {
       setError(null);
-      await listService.updateList(updatedList.id, updatedList.title, updatedList.color, updatedList.filters);
+      await listService.updateList(updatedList.id, updatedList.title, updatedList.color, updatedList.filters, updatedList.isPinned);
       await refreshLists();
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Failed to update list');

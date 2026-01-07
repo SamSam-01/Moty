@@ -35,6 +35,8 @@ export default function HomeScreen() {
     setColor,
     filters,
     setFilters,
+    isPinned,
+    setIsPinned,
 
     formError,
     openCreateModal,
@@ -165,6 +167,8 @@ export default function HomeScreen() {
         setColor={setColor}
         filters={filters}
         setFilters={setFilters}
+        isPinned={isPinned}
+        setIsPinned={setIsPinned}
       />
     </View>
   );

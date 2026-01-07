@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft, Mail, Calendar, Key, LogOut } from 'lucide-react-native';
+import { ArrowLeft, Mail, Calendar, Key, LogOut, Pin } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAppContext } from '../src/context/AppContext';
 import GlassView from '../src/components/ui/GlassView';
@@ -9,12 +9,16 @@ import Typography from '../src/components/ui/Typography';
 import { theme } from '../src/theme';
 import Button from '../src/components/ui/Button';
 import Input from '../src/components/ui/Input';
+import { ListCard } from '../src/features/lists';
 import { useState, useEffect } from 'react';
 
 export default function ProfileScreen() {
-    const { session, signOut, profile, updateProfile } = useAppContext();
+    const { session, signOut, profile, updateProfile, lists } = useAppContext();
     const user = session?.user;
     const [isEditing, setIsEditing] = useState(false);
+
+    // Filter pinned lists
+    const pinnedLists = lists.filter(list => list.isPinned);
     const [newUsername, setNewUsername] = useState(profile?.username || '');
 
     useEffect(() => {
@@ -170,6 +174,29 @@ export default function ProfileScreen() {
                     </View>
                 </GlassView>
 
+                {/* Pinned Lists Section */}
+                {pinnedLists.length > 0 && (
+                    <View style={styles.pinnedSection}>
+                        <View style={styles.pinnedHeader}>
+                            <Pin color={theme.colors.primary} size={20} style={{ transform: [{ rotate: '45deg' }] }} />
+                            <Typography variant="h3" style={styles.sectionTitle}>Pinned Lists</Typography>
+                        </View>
+                        <View style={styles.pinnedListContainer}>
+                            {pinnedLists.map((list, index) => (
+                                <ListCard
+                                    key={list.id}
+                                    list={list}
+                                    index={index}
+                                    onPress={(id, title) => router.push({ pathname: '/list/[id]', params: { id, title } })}
+                                    onEdit={() => { }}
+                                    onDelete={() => { }}
+                                    readonly
+                                />
+                            ))}
+                        </View>
+                    </View>
+                )}
+
                 <Button
                     title="Sign Out"
                     onPress={handleSignOut}
@@ -288,5 +315,21 @@ const styles = StyleSheet.create({
         color: theme.colors.text.tertiary,
         textAlign: 'center',
         opacity: 0.5,
+    },
+    pinnedSection: {
+        marginBottom: theme.spacing.xl,
+    },
+    pinnedHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        gap: theme.spacing.s,
+        marginBottom: theme.spacing.m,
+        paddingHorizontal: theme.spacing.xs,
+    },
+    sectionTitle: {
+        color: theme.colors.text.primary,
+    },
+    pinnedListContainer: {
+        gap: theme.spacing.m,
     },
 });
