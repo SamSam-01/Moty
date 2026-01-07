@@ -37,39 +37,6 @@ export default function PublicProfileView({
     const isPublic = profile?.is_public ?? true;
     const canViewLists = isPublic || stats?.isFollowing || isOwner;
 
-    if (!isPublic && !stats?.isFollowing && !isOwner) {
-        return (
-            <GlassView intensity={20} style={styles.profileCard}>
-                <View style={styles.privateContainer}>
-                    <Lock color={theme.colors.text.secondary} size={48} />
-                    <Typography variant="h3" style={styles.privateText}>This profile is private</Typography>
-
-                    {!isOwner && (
-                        <TouchableOpacity
-                            style={[
-                                styles.followButton,
-                                stats?.isFollowing && styles.followingButton,
-                                stats?.isPending && styles.pendingButton // Add pending style
-                            ]}
-                            onPress={stats?.isFollowing ? onUnfollow : (stats?.isPending ? () => { } : onFollow)}
-                            disabled={stats?.isPending}
-                        >
-                            <Typography
-                                variant="body"
-                                style={[
-                                    styles.followButtonText,
-                                    (stats?.isFollowing || stats?.isPending) && styles.followingButtonText
-                                ]}
-                            >
-                                {stats?.isFollowing ? 'Following' : (stats?.isPending ? 'Requested' : 'Follow')}
-                            </Typography>
-                        </TouchableOpacity>
-                    )}
-                </View>
-            </GlassView>
-        );
-    }
-
     return (
         <View>
             <GlassView intensity={20} style={styles.profileCard}>
@@ -89,37 +56,77 @@ export default function PublicProfileView({
 
                 {/* Stats & Actions */}
                 <View style={styles.statsContainer}>
-                    <TouchableOpacity onPress={onFollowersPress} style={styles.statItem}>
+                    <TouchableOpacity
+                        onPress={canViewLists ? onFollowersPress : undefined}
+                        style={styles.statItem}
+                        activeOpacity={canViewLists ? 0.7 : 1}
+                    >
                         <Typography variant="h3" style={styles.statValue}>{stats?.followers || 0}</Typography>
                         <Typography variant="caption" style={styles.statLabel}>Followers</Typography>
                     </TouchableOpacity>
                     <View style={styles.divider} />
-                    <TouchableOpacity onPress={onFollowingPress} style={styles.statItem}>
+                    <TouchableOpacity
+                        onPress={canViewLists ? onFollowingPress : undefined}
+                        style={styles.statItem}
+                        activeOpacity={canViewLists ? 0.7 : 1}
+                    >
                         <Typography variant="h3" style={styles.statValue}>{stats?.following || 0}</Typography>
                         <Typography variant="caption" style={styles.statLabel}>Following</Typography>
                     </TouchableOpacity>
                 </View>
 
-                {!isOwner && (
-                    <TouchableOpacity
-                        style={[
-                            styles.followButton,
-                            stats?.isFollowing && styles.followingButton,
-                            stats?.isPending && styles.pendingButton
-                        ]}
-                        onPress={stats?.isFollowing ? onUnfollow : (stats?.isPending ? () => { } : onFollow)}
-                        disabled={stats?.isPending}
-                    >
-                        <Typography
-                            variant="body"
-                            style={[
-                                styles.followButtonText,
-                                (stats?.isFollowing || stats?.isPending) && styles.followingButtonText
-                            ]}
-                        >
-                            {stats?.isFollowing ? 'Following' : (stats?.isPending ? 'Requested' : 'Follow')}
-                        </Typography>
-                    </TouchableOpacity>
+                {/* Private Content Placeholder */}
+                {!canViewLists ? (
+                    <View style={styles.privateContainer}>
+                        <Lock color={theme.colors.text.secondary} size={48} />
+                        <Typography variant="h3" style={styles.privateText}>This profile is private</Typography>
+
+                        {!isOwner && (
+                            <TouchableOpacity
+                                style={[
+                                    styles.followButton,
+                                    stats?.isFollowing && styles.followingButton,
+                                    stats?.isPending && styles.pendingButton
+                                ]}
+                                onPress={stats?.isFollowing ? onUnfollow : (stats?.isPending ? () => { } : onFollow)}
+                                disabled={stats?.isPending}
+                            >
+                                <Typography
+                                    variant="body"
+                                    style={[
+                                        styles.followButtonText,
+                                        (stats?.isFollowing || stats?.isPending) && styles.followingButtonText
+                                    ]}
+                                >
+                                    {stats?.isFollowing ? 'Following' : (stats?.isPending ? 'Requested' : 'Follow')}
+                                </Typography>
+                            </TouchableOpacity>
+                        )}
+                    </View>
+                ) : (
+                    <>
+                        {!isOwner && (
+                            <TouchableOpacity
+                                style={[
+                                    styles.followButton,
+                                    stats?.isFollowing && styles.followingButton,
+                                    stats?.isPending && styles.pendingButton
+                                ]}
+                                onPress={stats?.isFollowing ? onUnfollow : (stats?.isPending ? () => { } : onFollow)}
+                                disabled={stats?.isPending}
+                            >
+                                <Typography
+                                    variant="body"
+                                    style={[
+                                        styles.followButtonText,
+                                        (stats?.isFollowing || stats?.isPending) && styles.followingButtonText
+                                    ]}
+                                >
+                                    {stats?.isFollowing ? 'Following' : (stats?.isPending ? 'Requested' : 'Follow')}
+                                </Typography>
+                            </TouchableOpacity>
+                        )}
+                    </>
                 )}
             </GlassView>
 
