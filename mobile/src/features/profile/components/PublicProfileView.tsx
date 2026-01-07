@@ -18,6 +18,7 @@ interface PublicProfileViewProps {
         followers: number;
         following: number;
         isFollowing: boolean;
+        isPending: boolean;
     };
 }
 
@@ -38,6 +39,28 @@ export default function PublicProfileView({
                 <View style={styles.privateContainer}>
                     <Lock color={theme.colors.text.secondary} size={48} />
                     <Typography variant="h3" style={styles.privateText}>This profile is private</Typography>
+
+                    {!isOwner && (
+                        <TouchableOpacity
+                            style={[
+                                styles.followButton,
+                                stats?.isFollowing && styles.followingButton,
+                                stats?.isPending && styles.pendingButton // Add pending style
+                            ]}
+                            onPress={stats?.isFollowing ? onUnfollow : (stats?.isPending ? () => { } : onFollow)}
+                            disabled={stats?.isPending}
+                        >
+                            <Typography
+                                variant="body"
+                                style={[
+                                    styles.followButtonText,
+                                    (stats?.isFollowing || stats?.isPending) && styles.followingButtonText
+                                ]}
+                            >
+                                {stats?.isFollowing ? 'Following' : (stats?.isPending ? 'Requested' : 'Follow')}
+                            </Typography>
+                        </TouchableOpacity>
+                    )}
                 </View>
             </GlassView>
         );
@@ -75,14 +98,22 @@ export default function PublicProfileView({
 
                 {!isOwner && (
                     <TouchableOpacity
-                        style={[styles.followButton, stats?.isFollowing && styles.followingButton]}
-                        onPress={stats?.isFollowing ? onUnfollow : onFollow}
+                        style={[
+                            styles.followButton,
+                            stats?.isFollowing && styles.followingButton,
+                            stats?.isPending && styles.pendingButton
+                        ]}
+                        onPress={stats?.isFollowing ? onUnfollow : (stats?.isPending ? () => { } : onFollow)}
+                        disabled={stats?.isPending}
                     >
                         <Typography
                             variant="body"
-                            style={[styles.followButtonText, stats?.isFollowing && styles.followingButtonText]}
+                            style={[
+                                styles.followButtonText,
+                                (stats?.isFollowing || stats?.isPending) && styles.followingButtonText
+                            ]}
                         >
-                            {stats?.isFollowing ? 'Following' : 'Follow'}
+                            {stats?.isFollowing ? 'Following' : (stats?.isPending ? 'Requested' : 'Follow')}
                         </Typography>
                     </TouchableOpacity>
                 )}
@@ -204,6 +235,11 @@ const styles = StyleSheet.create({
         backgroundColor: 'rgba(255,255,255,0.1)',
         borderWidth: 1,
         borderColor: 'rgba(255,255,255,0.2)',
+    },
+    pendingButton: {
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.1)',
     },
     followButtonText: {
         color: '#fff',

@@ -171,7 +171,8 @@ export default function PublicProfileScreen() {
                     stats={followStats ? {
                         followers: followStats.followersCount,
                         following: followStats.followingCount,
-                        isFollowing: followStats.isFollowing
+                        isFollowing: followStats.isFollowing,
+                        isPending: followStats.isPending
                     } : undefined}
                     isOwner={currentUserId === id}
                     onFollow={handleFollow}

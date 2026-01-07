@@ -4,6 +4,17 @@ export interface FollowStats {
     followersCount: number;
     followingCount: number;
     isFollowing: boolean;
+    isPending: boolean;
+}
+
+export interface PendingRequest {
+    id: string; // relationship id
+    follower: {
+        id: string;
+        username: string;
+        avatar_url: string | null;
+    };
+    created_at: string;
 }
 
 export const relationshipService = {
@@ -11,11 +22,24 @@ export const relationshipService = {
      * Follow a user
      */
     async followUser(followerId: string, followingId: string): Promise<void> {
+        // 1. Check if target user is public
+        const { data: targetProfile, error: profileError } = await supabase
+            .from('profiles')
+            .select('is_public')
+            .eq('id', followingId)
+            .single();
+
+        if (profileError) throw profileError;
+
+        const status = targetProfile?.is_public ? 'accepted' : 'pending';
+
+        // 2. Insert relationship
         const { error } = await supabase
             .from('relationships')
             .insert({
                 follower_id: followerId,
                 following_id: followingId,
+                status: status
             });
 
         if (error) throw error;
@@ -42,7 +66,8 @@ export const relationshipService = {
         const { count: followersCount, error: followersError } = await supabase
             .from('relationships')
             .select('*', { count: 'exact', head: true })
-            .eq('following_id', userId);
+            .eq('following_id', userId)
+            .eq('status', 'accepted');
 
         if (followersError) {
             console.error('Error fetching followers count:', followersError);
@@ -54,23 +79,29 @@ export const relationshipService = {
         const { count: followingCount, error: followingError } = await supabase
             .from('relationships')
             .select('*', { count: 'exact', head: true })
-            .eq('follower_id', userId);
+            .eq('follower_id', userId)
+            .eq('status', 'accepted');
 
         if (followingError) throw followingError;
 
         // Check if current user is following target user
         let isFollowing = false;
+        let isPending = false;
+
         if (currentUserId) {
             const { data, error } = await supabase
                 .from('relationships')
-                .select('*')
+                .select('status')
                 .eq('follower_id', currentUserId)
                 .eq('following_id', userId)
                 .single();
 
-            // PGRST116 means no row found, which is fine (not following)
             if (!error && data) {
-                isFollowing = true;
+                if (data.status === 'accepted') {
+                    isFollowing = true;
+                } else if (data.status === 'pending') {
+                    isPending = true;
+                }
             }
         }
 
@@ -78,6 +109,57 @@ export const relationshipService = {
             followersCount: followersCount || 0,
             followingCount: followingCount || 0,
             isFollowing,
+            isPending
         };
+    },
+
+    /**
+     * Get pending follow requests for the current user (where current user is the target/following_id)
+     */
+    async getPendingRequests(userId: string): Promise<PendingRequest[]> {
+        const { data, error } = await supabase
+            .from('relationships')
+            .select(`
+                id,
+                created_at,
+                follower:profiles!follower_id (
+                    id,
+                    username,
+                    avatar_url
+                )
+            `)
+            .eq('following_id', userId)
+            .eq('status', 'pending');
+
+        if (error) throw error;
+
+        // Map correct type from join
+        return (data || []).map((item: any) => ({
+            id: item.id,
+            created_at: item.created_at,
+            follower: {
+                id: item.follower.id,
+                username: item.follower.username,
+                avatar_url: item.follower.avatar_url,
+            }
+        }));
+    },
+
+    async acceptRequest(requestId: string): Promise<void> {
+        const { error } = await supabase
+            .from('relationships')
+            .update({ status: 'accepted' })
+            .eq('id', requestId);
+
+        if (error) throw error;
+    },
+
+    async declineRequest(requestId: string): Promise<void> {
+        const { error } = await supabase
+            .from('relationships')
+            .delete()
+            .eq('id', requestId);
+
+        if (error) throw error;
     }
 };
