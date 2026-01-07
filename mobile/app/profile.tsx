@@ -64,7 +64,7 @@ export default function ProfileScreen() {
                 </View>
             </GlassView>
 
-            <ScrollView contentContainerStyle={styles.content}>
+            <ScrollView contentContainerStyle={styles.content} style={{ flex: 1 }}>
                 <PublicProfileView
                     profile={profile}
                     lists={pinnedLists}
