@@ -27,5 +27,6 @@ export interface Movie {
 export interface UserProfile {
   id: string;
   username: string;
+  is_public?: boolean;
   updated_at?: string;
 }

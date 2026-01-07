@@ -6,6 +6,20 @@ import { Auth } from '../features/auth';
 import { listService } from '../services/storage/listService';
 import { movieService } from '../services/storage/movieService';
 import { profileService } from '../services/api/profileService';
+import * as Device from 'expo-device';
+import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { Platform } from 'react-native';
+
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
 
 interface AppContextType {
   session: Session | null;
@@ -49,6 +63,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setSession(session);
     });
   }, []);
+
+  // Register for Push Notifications
+  useEffect(() => {
+    if (session?.user?.id) {
+      registerForPushNotificationsAsync().then(token => {
+        if (token) {
+          profileService.registerPushToken(session.user.id, token);
+        }
+      });
+    }
+  }, [session?.user?.id]);
 
   const addList = async (listData: Omit<MovieList, 'id' | 'createdAt'>) => {
     try {
@@ -223,6 +248,50 @@ export function AppProvider({ children }: { children: ReactNode }) {
       {!session && !isLoading ? <Auth /> : children}
     </AppContext.Provider>
   );
+}
+
+
+async function registerForPushNotificationsAsync() {
+  if (Platform.OS === 'android') {
+    Notifications.setNotificationChannelAsync('default', {
+      name: 'default',
+      importance: Notifications.AndroidImportance.MAX,
+      vibrationPattern: [0, 250, 250, 250],
+      lightColor: '#FF231F7C',
+    });
+  }
+
+  if (!Device.isDevice) {
+    // console.log('Must use physical device for Push Notifications');
+    return;
+  }
+
+  const { status: existingStatus } = await Notifications.getPermissionsAsync();
+  let finalStatus = existingStatus;
+
+  if (existingStatus !== 'granted') {
+    const { status } = await Notifications.requestPermissionsAsync();
+    finalStatus = status;
+  }
+
+  if (finalStatus !== 'granted') {
+    // console.log('Failed to get push token for push notification!');
+    return;
+  }
+
+  try {
+    const projectId = Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
+    if (!projectId) {
+      console.warn('Push Notifications: Project ID not found. Run `eas init` to configure EAS.');
+      return;
+    }
+    const pushTokenString = (await Notifications.getExpoPushTokenAsync({
+      projectId,
+    })).data;
+    return pushTokenString;
+  } catch (e) {
+    console.warn('Error getting push token:', e);
+  }
 }
 
 export function useAppContext() {

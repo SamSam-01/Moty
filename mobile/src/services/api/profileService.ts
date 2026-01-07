@@ -76,9 +76,43 @@ export const profileService = {
             .insert({
                 id: userId,
                 username,
+                is_public: true, // Default to public
                 updated_at: new Date().toISOString(),
             });
 
         if (error) throw error;
+    },
+
+    /**
+     * Search users by username
+     */
+    async searchUsers(query: string): Promise<UserProfile[]> {
+        if (!query || query.length < 2) return [];
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .ilike('username', `%${query}%`)
+            .limit(10);
+
+        if (error) throw error;
+        return data || [];
+        if (error) throw error;
+        return data || [];
+    },
+
+    /**
+     * Update Push Token for user
+     */
+    async registerPushToken(userId: string, token: string): Promise<void> {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ push_token: token })
+            .eq('id', userId);
+
+        if (error) {
+            console.error('Error updating push token:', error);
+            // Don't throw, just log. Not critical.
+        }
     }
 };

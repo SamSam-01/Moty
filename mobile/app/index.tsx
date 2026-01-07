@@ -7,9 +7,11 @@ import {
   FlatList,
   StatusBar,
 } from 'react-native';
-import { router } from 'expo-router';
-import { Plus, User } from 'lucide-react-native';
+import { router, useFocusEffect } from 'expo-router';
+import { Plus, User, Search, Bell } from 'lucide-react-native';
 import { useMovieLists, ListCard, ListFormModal } from '../src/features/lists';
+import { relationshipService } from '../src/services/api/relationshipService';
+import { useAppContext } from '../src/context/AppContext';
 import { theme } from '../src/theme';
 import GlassView from '../src/components/ui/GlassView';
 import Typography from '../src/components/ui/Typography';
@@ -47,6 +49,23 @@ export default function HomeScreen() {
     handleUpdateList,
     handleDeleteList,
   } = useMovieLists();
+  const { session } = useAppContext();
+  const [unreadCount, setUnreadCount] = React.useState(0);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (session?.user?.id) {
+        console.log('[HomeScreen] Fetching unread count for:', session.user.id);
+        relationshipService.getUnreadCount(session.user.id)
+          .then((count) => {
+            console.log('[HomeScreen] Unread count:', count);
+            setUnreadCount(count);
+          })
+          .catch(console.error);
+      }
+    }, [session?.user?.id])
+  );
+
 
   const scrollY = useSharedValue(0);
 
@@ -88,9 +107,20 @@ export default function HomeScreen() {
         <GlassView intensity={80} style={StyleSheet.absoluteFill} />
         <View style={styles.headerContent}>
           <Typography variant="h3" style={styles.headerTitleSmall}>My Rankings</Typography>
-          <TouchableOpacity onPress={navigateToProfile} style={styles.iconButton}>
-            <User color={theme.colors.text.primary} size={20} />
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.iconButton}>
+              <View style={styles.bellContainer}>
+                <Bell color={theme.colors.text.primary} size={20} />
+                {unreadCount > 0 && <View style={styles.badge} />}
+              </View>
+            </TouchableOpacity>
+            <TouchableOpacity onPress={() => router.push('/search')} style={styles.iconButton}>
+              <Search color={theme.colors.text.primary} size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={navigateToProfile} style={styles.iconButton}>
+              <User color={theme.colors.text.primary} size={20} />
+            </TouchableOpacity>
+          </View>
         </View>
       </Animated.View>
 
@@ -119,9 +149,20 @@ export default function HomeScreen() {
                 <Typography variant="caption" style={styles.greeting}>Welcome back</Typography>
                 <Typography variant="h1" style={styles.headerTitleLarge}>My Rankings</Typography>
               </View>
-              <TouchableOpacity onPress={navigateToProfile} style={styles.logoutButtonLarge}>
-                <User color={theme.colors.text.secondary} size={24} />
-              </TouchableOpacity>
+              <View style={styles.headerActions}>
+                <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.actionButton}>
+                  <View style={styles.bellContainer}>
+                    <Bell color={theme.colors.text.secondary} size={24} />
+                    {unreadCount > 0 && <View style={styles.badgeLarge} />}
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity onPress={() => router.push('/search')} style={styles.actionButton}>
+                  <Search color={theme.colors.text.secondary} size={24} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={navigateToProfile} style={styles.actionButton}>
+                  <User color={theme.colors.text.secondary} size={24} />
+                </TouchableOpacity>
+              </View>
             </View>
             <Typography variant="body" style={styles.subtitle}>
               {lists.length} {lists.length === 1 ? 'Collection' : 'Collections'}
@@ -207,8 +248,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
   },
   iconButton: {
-    position: 'absolute',
-    right: theme.spacing.l,
     padding: 8,
   },
   largeHeader: {
@@ -220,10 +259,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
-  logoutButtonLarge: {
+  headerActions: {
+    flexDirection: 'row',
+    gap: theme.spacing.m,
+  },
+  actionButton: {
     padding: theme.spacing.s,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: theme.borderRadius.round,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    position: 'absolute',
+    right: theme.spacing.l,
+    gap: theme.spacing.m,
   },
   greeting: {
     color: theme.colors.primary,
@@ -271,7 +320,34 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
+  },
+  bellContainer: {
+    position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#EF4444', // Hardcoded red to ensure visibility
+    borderWidth: 2,
+    borderColor: '#1e1b4b',
+    zIndex: 10,
+  },
+  badgeLarge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#EF4444', // Hardcoded red
+    borderWidth: 2,
+    borderColor: '#1e1b4b',
+    zIndex: 10,
+  }
 });
