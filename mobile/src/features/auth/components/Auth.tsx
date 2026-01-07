@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { View, StyleSheet, Alert, TouchableOpacity } from 'react-native';
+import { useAppContext } from '../../../context/AppContext';
 import { supabase } from '../../../lib/supabase';
 import { StatusBar } from 'expo-status-bar';
 import { theme } from '../../../theme';
@@ -9,8 +10,10 @@ import Input from '../../../components/ui/Input';
 import Button from '../../../components/ui/Button';
 
 export default function Auth() {
+    const { createProfile } = useAppContext();
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [username, setUsername] = useState('');
     const [loading, setLoading] = useState(false);
     const [isLogin, setIsLogin] = useState(true);
 
@@ -26,7 +29,7 @@ export default function Auth() {
     }
 
     async function signUpWithEmail() {
-        if (!email || !password) {
+        if (!email || !password || !username) {
             Alert.alert('Error', 'Please fill in all fields');
             return;
         }
@@ -34,14 +37,36 @@ export default function Auth() {
             Alert.alert('Error', 'Password must be at least 6 characters');
             return;
         }
+        if (username.length < 3) {
+            Alert.alert('Error', 'Username must be at least 3 characters');
+            return;
+        }
+
         setLoading(true);
-        const { error } = await supabase.auth.signUp({
+        const { data, error } = await supabase.auth.signUp({
             email,
             password,
         });
 
-        if (error) Alert.alert('Error', error.message);
-        else Alert.alert('Success', 'Please check your inbox for email verification!');
+        if (error) {
+            Alert.alert('Error', error.message);
+            setLoading(false);
+            return;
+        }
+
+        if (data.user) {
+            try {
+                // Try creating the profile immediately
+                await createProfile(username);
+                Alert.alert('Success', 'Account created! Please verify your email if required.');
+            } catch (profileError) {
+                // If profile creation fails (e.g. username taken), we might want to warn the user
+                // but the auth account is created. For now, treat as error.
+                const message = profileError instanceof Error ? profileError.message : 'Failed to set username';
+                Alert.alert('Error', message);
+            }
+        }
+
         setLoading(false);
     }
 
@@ -63,6 +88,16 @@ export default function Auth() {
                     autoCapitalize="none"
                     keyboardType="email-address"
                 />
+
+                {!isLogin && (
+                    <Input
+                        label="Username"
+                        onChangeText={setUsername}
+                        value={username}
+                        placeholder="Choose a unique username"
+                        autoCapitalize="none"
+                    />
+                )}
 
                 <Input
                     label="Password"
