@@ -48,6 +48,7 @@ export default function ProfileScreen() {
                 <PublicProfileView
                     profile={profile}
                     lists={pinnedLists}
+                    isOwner={true}
                 />
 
                 <Button

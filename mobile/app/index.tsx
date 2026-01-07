@@ -8,7 +8,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Plus, User } from 'lucide-react-native';
+import { Plus, User, Search } from 'lucide-react-native';
 import { useMovieLists, ListCard, ListFormModal } from '../src/features/lists';
 import { theme } from '../src/theme';
 import GlassView from '../src/components/ui/GlassView';
@@ -88,9 +88,14 @@ export default function HomeScreen() {
         <GlassView intensity={80} style={StyleSheet.absoluteFill} />
         <View style={styles.headerContent}>
           <Typography variant="h3" style={styles.headerTitleSmall}>My Rankings</Typography>
-          <TouchableOpacity onPress={navigateToProfile} style={styles.iconButton}>
-            <User color={theme.colors.text.primary} size={20} />
-          </TouchableOpacity>
+          <View style={styles.headerRight}>
+            <TouchableOpacity onPress={() => router.push('/search')} style={styles.iconButton}>
+              <Search color={theme.colors.text.primary} size={20} />
+            </TouchableOpacity>
+            <TouchableOpacity onPress={navigateToProfile} style={styles.iconButton}>
+              <User color={theme.colors.text.primary} size={20} />
+            </TouchableOpacity>
+          </View>
         </View>
       </Animated.View>
 
@@ -119,9 +124,14 @@ export default function HomeScreen() {
                 <Typography variant="caption" style={styles.greeting}>Welcome back</Typography>
                 <Typography variant="h1" style={styles.headerTitleLarge}>My Rankings</Typography>
               </View>
-              <TouchableOpacity onPress={navigateToProfile} style={styles.logoutButtonLarge}>
-                <User color={theme.colors.text.secondary} size={24} />
-              </TouchableOpacity>
+              <View style={styles.headerActions}>
+                <TouchableOpacity onPress={() => router.push('/search')} style={styles.actionButton}>
+                  <Search color={theme.colors.text.secondary} size={24} />
+                </TouchableOpacity>
+                <TouchableOpacity onPress={navigateToProfile} style={styles.actionButton}>
+                  <User color={theme.colors.text.secondary} size={24} />
+                </TouchableOpacity>
+              </View>
             </View>
             <Typography variant="body" style={styles.subtitle}>
               {lists.length} {lists.length === 1 ? 'Collection' : 'Collections'}
@@ -207,8 +217,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
   },
   iconButton: {
-    position: 'absolute',
-    right: theme.spacing.l,
     padding: 8,
   },
   largeHeader: {
@@ -220,10 +228,20 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'flex-start',
   },
-  logoutButtonLarge: {
+  headerActions: {
+    flexDirection: 'row',
+    gap: theme.spacing.m,
+  },
+  actionButton: {
     padding: theme.spacing.s,
     backgroundColor: 'rgba(255,255,255,0.05)',
     borderRadius: theme.borderRadius.round,
+  },
+  headerRight: {
+    flexDirection: 'row',
+    position: 'absolute',
+    right: theme.spacing.l,
+    gap: theme.spacing.m,
   },
   greeting: {
     color: theme.colors.primary,

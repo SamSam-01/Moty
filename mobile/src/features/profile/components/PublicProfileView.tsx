@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { View, StyleSheet, TouchableOpacity } from 'react-native';
 import { Pin, Lock } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { theme } from '../../../theme';
@@ -11,15 +11,28 @@ import { ListCard } from '../../lists';
 interface PublicProfileViewProps {
     profile: UserProfile | null;
     lists?: MovieList[]; // Expected to be already filtered for pinned lists
+    isOwner?: boolean;
+    onFollow?: () => void;
+    onUnfollow?: () => void;
+    stats?: {
+        followers: number;
+        following: number;
+        isFollowing: boolean;
+    };
 }
 
 export default function PublicProfileView({
     profile,
     lists = [],
+    isOwner = false,
+    onFollow,
+    onUnfollow,
+    stats,
 }: PublicProfileViewProps) {
     const isPublic = profile?.is_public ?? true;
+    const canViewLists = isPublic || stats?.isFollowing || isOwner;
 
-    if (!isPublic) {
+    if (!isPublic && !stats?.isFollowing && !isOwner) {
         return (
             <GlassView intensity={20} style={styles.profileCard}>
                 <View style={styles.privateContainer}>
@@ -46,10 +59,37 @@ export default function PublicProfileView({
                         {profile?.username || 'User'}
                     </Typography>
                 </View>
+
+                {/* Stats & Actions */}
+                <View style={styles.statsContainer}>
+                    <View style={styles.statItem}>
+                        <Typography variant="h3" style={styles.statValue}>{stats?.followers || 0}</Typography>
+                        <Typography variant="caption" style={styles.statLabel}>Followers</Typography>
+                    </View>
+                    <View style={styles.divider} />
+                    <View style={styles.statItem}>
+                        <Typography variant="h3" style={styles.statValue}>{stats?.following || 0}</Typography>
+                        <Typography variant="caption" style={styles.statLabel}>Following</Typography>
+                    </View>
+                </View>
+
+                {!isOwner && (
+                    <TouchableOpacity
+                        style={[styles.followButton, stats?.isFollowing && styles.followingButton]}
+                        onPress={stats?.isFollowing ? onUnfollow : onFollow}
+                    >
+                        <Typography
+                            variant="body"
+                            style={[styles.followButtonText, stats?.isFollowing && styles.followingButtonText]}
+                        >
+                            {stats?.isFollowing ? 'Following' : 'Follow'}
+                        </Typography>
+                    </TouchableOpacity>
+                )}
             </GlassView>
 
             {/* Pinned Lists Section */}
-            {lists.length > 0 && (
+            {canViewLists && lists.length > 0 && (
                 <View style={styles.pinnedSection}>
                     <View style={styles.pinnedHeader}>
                         <Pin color={theme.colors.primary} size={20} style={{ transform: [{ rotate: '45deg' }] }} />
@@ -128,5 +168,48 @@ const styles = StyleSheet.create({
     },
     pinnedListContainer: {
         gap: theme.spacing.m,
+    },
+    statsContainer: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        gap: theme.spacing.xl,
+        marginVertical: theme.spacing.m,
+    },
+    statItem: {
+        alignItems: 'center',
+    },
+    statValue: {
+        color: theme.colors.text.primary,
+        marginBottom: 4,
+    },
+    statLabel: {
+        color: theme.colors.text.secondary,
+        fontSize: 12,
+    },
+    divider: {
+        width: 1,
+        height: 30,
+        backgroundColor: 'rgba(255,255,255,0.1)',
+    },
+    followButton: {
+        backgroundColor: theme.colors.primary,
+        paddingVertical: 8,
+        paddingHorizontal: 24,
+        borderRadius: 20,
+        marginTop: theme.spacing.s,
+        alignSelf: 'center',
+    },
+    followingButton: {
+        backgroundColor: 'rgba(255,255,255,0.1)',
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.2)',
+    },
+    followButtonText: {
+        color: '#fff',
+        fontWeight: '600',
+    },
+    followingButtonText: {
+        color: theme.colors.text.secondary,
     },
 });

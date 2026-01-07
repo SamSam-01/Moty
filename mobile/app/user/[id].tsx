@@ -7,14 +7,20 @@ import { theme } from '../../src/theme';
 import GlassView from '../../src/components/ui/GlassView';
 import Typography from '../../src/components/ui/Typography';
 import PublicProfileView from '../../src/features/profile/components/PublicProfileView';
-import { profileService } from '../../src/services/api/profileService';
+import { relationshipService, FollowStats } from '../../src/services/api/relationshipService';
+import { useAppContext } from '../../src/context/AppContext';
 import { UserProfile, MovieList } from '../../src/types';
+import { profileService } from '../../src/services/api/profileService';
 import { supabase } from '../../src/lib/supabase';
 
 export default function PublicProfileScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
+    const { session } = useAppContext();
+    const currentUserId = session?.user?.id;
+
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [lists, setLists] = useState<MovieList[]>([]);
+    const [followStats, setFollowStats] = useState<FollowStats | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -46,7 +52,7 @@ export default function PublicProfileScreen() {
 
             if (listError) throw listError;
 
-            const mappedLists: MovieList[] = (data || []).map(item => ({
+            const mappedLists: MovieList[] = (data || []).map((item: any) => ({
                 id: item.id.toString(),
                 title: item.name,
                 imageUrl: item.image_url,
@@ -58,11 +64,41 @@ export default function PublicProfileScreen() {
 
             setLists(mappedLists);
 
+            // 3. Fetch Follow Stats
+            const stats = await relationshipService.getFollowStats(id, currentUserId);
+            setFollowStats(stats);
+
         } catch (e) {
             console.error('Error loading public profile:', e);
             setError('Failed to load profile');
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleFollow = async () => {
+        if (!currentUserId || !id) return;
+        try {
+            await relationshipService.followUser(currentUserId, id);
+            // Refresh stats
+            const stats = await relationshipService.getFollowStats(id, currentUserId);
+            setFollowStats(stats);
+        } catch (error) {
+            console.error('Error following user:', error);
+            alert('Failed to follow user');
+        }
+    };
+
+    const handleUnfollow = async () => {
+        if (!currentUserId || !id) return;
+        try {
+            await relationshipService.unfollowUser(currentUserId, id);
+            // Refresh stats
+            const stats = await relationshipService.getFollowStats(id, currentUserId);
+            setFollowStats(stats);
+        } catch (error) {
+            console.error('Error unfollowing user:', error);
+            alert('Failed to unfollow user');
         }
     };
 
@@ -131,6 +167,14 @@ export default function PublicProfileScreen() {
                 <PublicProfileView
                     profile={profile}
                     lists={lists}
+                    stats={followStats ? {
+                        followers: followStats.followersCount,
+                        following: followStats.followingCount,
+                        isFollowing: followStats.isFollowing
+                    } : undefined}
+                    isOwner={currentUserId === id}
+                    onFollow={handleFollow}
+                    onUnfollow={handleUnfollow}
                 />
             </ScrollView>
         </View>

@@ -81,5 +81,21 @@ export const profileService = {
             });
 
         if (error) throw error;
+    },
+
+    /**
+     * Search users by username
+     */
+    async searchUsers(query: string): Promise<UserProfile[]> {
+        if (!query || query.length < 2) return [];
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select('*')
+            .ilike('username', `%${query}%`)
+            .limit(10);
+
+        if (error) throw error;
+        return data || [];
     }
 };
