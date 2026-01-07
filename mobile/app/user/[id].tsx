@@ -185,14 +185,8 @@ export default function PublicProfileScreen() {
                     onUnfollow={handleUnfollow}
                     onFollowersPress={() => router.push(`/user/${id}/network?type=followers`)}
                     onFollowingPress={() => router.push(`/user/${id}/network?type=following`)}
+                    podium={podium}
                 />
-
-                {podium.length > 0 && (
-                    <View style={{ padding: theme.spacing.m }}>
-                        <Typography variant="h3" style={{ color: theme.colors.text.primary, marginBottom: theme.spacing.s, textAlign: 'center' }}>Top 3</Typography>
-                        <Podium entries={podium} editable={false} />
-                    </View>
-                )}
             </ScrollView>
         </View>
     );

@@ -77,16 +77,9 @@ export default function ProfileScreen() {
                     } : undefined}
                     onFollowersPress={() => router.push(`/user/${session?.user?.id}/network?type=followers`)}
                     onFollowingPress={() => router.push(`/user/${session?.user?.id}/network?type=following`)}
+                    podium={podium}
+                    onPodiumPress={(rank) => router.push(`/movie-search?rank=${rank}`)}
                 />
-
-                <View style={{ paddingHorizontal: theme.spacing.m, marginBottom: theme.spacing.xl }}>
-                    <Typography variant="h3" style={{ color: theme.colors.text.primary, marginBottom: theme.spacing.s, textAlign: 'center' }}>My Top 3</Typography>
-                    <Podium
-                        entries={podium}
-                        editable={true}
-                        onPressSlot={(rank) => router.push(`/movie-search?rank=${rank}`)}
-                    />
-                </View>
 
                 {/* Friend Requests Section */}
 
