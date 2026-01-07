@@ -8,7 +8,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { router } from 'expo-router';
-import { Plus, User, Search } from 'lucide-react-native';
+import { Plus, User, Search, Bell } from 'lucide-react-native';
 import { useMovieLists, ListCard, ListFormModal } from '../src/features/lists';
 import { theme } from '../src/theme';
 import GlassView from '../src/components/ui/GlassView';
@@ -89,6 +89,9 @@ export default function HomeScreen() {
         <View style={styles.headerContent}>
           <Typography variant="h3" style={styles.headerTitleSmall}>My Rankings</Typography>
           <View style={styles.headerRight}>
+            <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.iconButton}>
+              <Bell color={theme.colors.text.primary} size={20} />
+            </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/search')} style={styles.iconButton}>
               <Search color={theme.colors.text.primary} size={20} />
             </TouchableOpacity>
@@ -125,6 +128,9 @@ export default function HomeScreen() {
                 <Typography variant="h1" style={styles.headerTitleLarge}>My Rankings</Typography>
               </View>
               <View style={styles.headerActions}>
+                <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.actionButton}>
+                  <Bell color={theme.colors.text.secondary} size={24} />
+                </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/search')} style={styles.actionButton}>
                   <Search color={theme.colors.text.secondary} size={24} />
                 </TouchableOpacity>
