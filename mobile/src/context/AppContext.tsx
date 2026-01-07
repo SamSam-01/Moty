@@ -1,17 +1,20 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { MovieList, Movie } from '../types';
+import { MovieList, Movie, UserProfile } from '../types';
 import { supabase } from '../lib/supabase';
 import { Session } from '@supabase/supabase-js';
 import { Auth } from '../features/auth';
 import { listService } from '../services/storage/listService';
 import { movieService } from '../services/storage/movieService';
+import { profileService } from '../services/api/profileService';
 
 interface AppContextType {
   session: Session | null;
   lists: MovieList[];
+  profile: UserProfile | null;
   isLoading: boolean;
   error: string | null;
   refreshLists: () => Promise<void>;
+
   addList: (list: Omit<MovieList, 'id' | 'createdAt'>) => Promise<void>;
   updateList: (list: MovieList) => Promise<void>;
   deleteList: (listId: string) => Promise<void>;
@@ -20,6 +23,9 @@ interface AppContextType {
   updateMovie: (listId: string, movie: Movie) => Promise<void>;
   deleteMovie: (listId: string, movieId: string) => Promise<void>;
   reorderMovies: (listId: string, movies: Movie[]) => Promise<void>;
+
+  updateProfile: (updates: Partial<UserProfile>) => Promise<void>;
+  createProfile: (username: string) => Promise<void>;
   signOut: () => Promise<void>;
 }
 
@@ -27,7 +33,9 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
+
   const [lists, setLists] = useState<MovieList[]>([]);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -123,7 +131,38 @@ export function AppProvider({ children }: { children: ReactNode }) {
       throw e;
     }
   };
+  const getProfile = async (userId: string) => {
+    try {
+      const data = await profileService.getProfile(userId);
+      setProfile(data);
+    } catch (e) {
+      console.error('Error loading profile:', e);
+    }
+  };
 
+  const updateProfile = async (updates: Partial<UserProfile>) => {
+    if (!session?.user) return;
+    try {
+      setError(null);
+      await profileService.updateProfile(session.user.id, updates);
+      await getProfile(session.user.id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to update profile');
+      throw e;
+    }
+  };
+
+  const createProfile = async (username: string) => {
+    if (!session?.user) return;
+    try {
+      setError(null);
+      await profileService.createProfile(session.user.id, username);
+      await getProfile(session.user.id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed to create profile');
+      throw e;
+    }
+  };
   const refreshLists = async () => {
     if (!session?.user) return;
     try {
@@ -141,20 +180,19 @@ export function AppProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (session?.user) {
       refreshLists();
+      getProfile(session.user.id);
     } else {
       setLists([]);
+      setProfile(null);
     }
   }, [session]);
-
-  if (!session && !isLoading) {
-    return <Auth />;
-  }
 
   return (
     <AppContext.Provider
       value={{
         session,
         lists,
+        profile,
         isLoading,
         error,
         refreshLists,
@@ -166,10 +204,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
         updateMovie,
         deleteMovie,
         reorderMovies,
-        signOut: async () => { await supabase.auth.signOut(); },
+        updateProfile,
+        createProfile,
+        signOut: async () => {
+          try {
+            const { error } = await supabase.auth.signOut();
+            if (error) console.error('SignOut Error:', error);
+          } catch (e) {
+            // console.error('SignOut Exception:', e);
+          } finally {
+            setSession(null);
+            setProfile(null);
+            setLists([]);
+          }
+        },
       }}
     >
-      {children}
+      {!session && !isLoading ? <Auth /> : children}
     </AppContext.Provider>
   );
 }

@@ -8,15 +8,38 @@ import GlassView from '../src/components/ui/GlassView';
 import Typography from '../src/components/ui/Typography';
 import { theme } from '../src/theme';
 import Button from '../src/components/ui/Button';
+import Input from '../src/components/ui/Input';
+import { useState, useEffect } from 'react';
 
 export default function ProfileScreen() {
-    const { session, signOut } = useAppContext();
+    const { session, signOut, profile, updateProfile } = useAppContext();
     const user = session?.user;
+    const [isEditing, setIsEditing] = useState(false);
+    const [newUsername, setNewUsername] = useState(profile?.username || '');
+
+    useEffect(() => {
+        if (profile?.username) {
+            setNewUsername(profile.username);
+        }
+    }, [profile]);
+
+    const handleUpdateUsername = async () => {
+        if (newUsername.length < 3) {
+            alert('Username must be at least 3 characters');
+            return;
+        }
+        try {
+            await updateProfile({ username: newUsername });
+            setIsEditing(false);
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            alert('Failed to update username. It might be taken.');
+        }
+    };
 
     const handleSignOut = async () => {
         try {
             await signOut();
-            // Auth flow will handle redirection based on session state change
         } catch (error) {
             console.error('Error signing out:', error);
         }
@@ -73,6 +96,41 @@ export default function ProfileScreen() {
                     </View>
 
                     <View style={styles.infoSection}>
+                        {/* Username */}
+                        <View style={styles.infoRow}>
+                            <View style={styles.iconContainer}>
+                                <Key color={theme.colors.text.secondary} size={20} />
+                            </View>
+                            <View style={styles.infoContent}>
+                                <Typography variant="caption" style={styles.label}>Username</Typography>
+                                {isEditing ? (
+                                    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+                                        <Input
+                                            value={newUsername}
+                                            onChangeText={setNewUsername}
+                                            style={{ flex: 1, marginBottom: 0 }}
+                                            autoCapitalize="none"
+                                        />
+                                        <TouchableOpacity onPress={handleUpdateUsername}>
+                                            <Typography variant="body" color={theme.colors.primary}>Save</Typography>
+                                        </TouchableOpacity>
+                                        <TouchableOpacity onPress={() => { setIsEditing(false); setNewUsername(profile?.username || ''); }}>
+                                            <Typography variant="body" color={theme.colors.error}>Cancel</Typography>
+                                        </TouchableOpacity>
+                                    </View>
+                                ) : (
+                                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+                                        <Typography variant="h3" style={styles.value}>
+                                            {profile?.username || 'No username set'}
+                                        </Typography>
+                                        <TouchableOpacity onPress={() => setIsEditing(true)}>
+                                            <Typography variant="body" color={theme.colors.primary}>Edit</Typography>
+                                        </TouchableOpacity>
+                                    </View>
+                                )}
+                            </View>
+                        </View>
+
                         {/* Email */}
                         <View style={styles.infoRow}>
                             <View style={styles.iconContainer}>
