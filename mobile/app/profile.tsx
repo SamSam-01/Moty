@@ -10,8 +10,19 @@ import { theme } from '../src/theme';
 import Button from '../src/components/ui/Button';
 import PublicProfileView from '../src/features/profile/components/PublicProfileView';
 
+import { relationshipService, FollowStats } from '../src/services/api/relationshipService';
+
 export default function ProfileScreen() {
-    const { profile, lists } = useAppContext();
+    const { profile, lists, session } = useAppContext();
+    const [followStats, setFollowStats] = React.useState<FollowStats | null>(null);
+
+    React.useEffect(() => {
+        if (session?.user?.id) {
+            relationshipService.getFollowStats(session.user.id)
+                .then(setFollowStats)
+                .catch(console.error);
+        }
+    }, [session?.user?.id]);
 
     // Filter pinned lists
     const pinnedLists = lists.filter(list => list.isPinned);
@@ -49,6 +60,11 @@ export default function ProfileScreen() {
                     profile={profile}
                     lists={pinnedLists}
                     isOwner={true}
+                    stats={followStats ? {
+                        followers: followStats.followersCount,
+                        following: followStats.followingCount,
+                        isFollowing: false // Not relevant for owner
+                    } : undefined}
                 />
 
                 <Button

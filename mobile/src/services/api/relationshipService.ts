@@ -44,7 +44,11 @@ export const relationshipService = {
             .select('*', { count: 'exact', head: true })
             .eq('following_id', userId);
 
-        if (followersError) throw followersError;
+        if (followersError) {
+            console.error('Error fetching followers count:', followersError);
+            throw followersError;
+        }
+        console.log(`[getFollowStats] userId=${userId} followers=${followersCount}`);
 
         // Get Following Count
         const { count: followingCount, error: followingError } = await supabase
