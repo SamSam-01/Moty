@@ -18,6 +18,7 @@ interface MovieItemProps {
     medalEmoji?: string | null;
     onEdit?: (item: Movie) => void;
     onDelete?: (itemId: string) => void;
+    readonly?: boolean;
 }
 
 const ITEM_HEIGHT = 100;
@@ -30,6 +31,7 @@ export default function MovieItem({
     medalEmoji,
     onEdit,
     onDelete,
+    readonly = false,
 }: MovieItemProps) {
 
     const getRankColor = (rank: number) => {
@@ -44,8 +46,8 @@ export default function MovieItem({
     return (
         <ScaleDecorator>
             <TouchableOpacity
-                onLongPress={drag}
-                activeOpacity={1}
+                onLongPress={readonly ? undefined : drag}
+                activeOpacity={readonly ? 1 : 1}
                 delayLongPress={200}
                 style={[
                     styles.containerWrapper,
@@ -57,13 +59,15 @@ export default function MovieItem({
                         styles.glassContent,
                         isActive && styles.activeItem
                     ]}>
-                        <TouchableOpacity
-                            style={styles.dragHandle}
-                            onPressIn={drag}
-                            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
-                        >
-                            <GripVertical color={theme.colors.text.tertiary} size={24} />
-                        </TouchableOpacity>
+                        {!readonly && (
+                            <TouchableOpacity
+                                style={styles.dragHandle}
+                                onPressIn={drag}
+                                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+                            >
+                                <GripVertical color={theme.colors.text.tertiary} size={24} />
+                            </TouchableOpacity>
+                        )}
 
                         <View style={styles.rankContainer}>
                             <Typography style={[styles.rankText, { color: rankColor }]}>

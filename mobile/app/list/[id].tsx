@@ -30,7 +30,8 @@ const getMedalEmoji = (rank: number): string | null => {
 };
 
 export default function ListDetailScreen() {
-  const { id, title } = useLocalSearchParams<{ id: string; title: string }>();
+  const { id, title, readonly } = useLocalSearchParams<{ id: string; title: string, readonly?: string }>();
+  const isReadOnly = readonly === 'true';
   const { lists } = useAppContext();
   const currentList = lists.find(list => list.id === id);
 
@@ -70,11 +71,12 @@ export default function ListDetailScreen() {
         drag={drag}
         isActive={isActive}
         medalEmoji={medal}
-        onEdit={openEditModal}
-        onDelete={handleDeleteMovie}
+        onEdit={isReadOnly ? undefined : openEditModal}
+        onDelete={isReadOnly ? undefined : handleDeleteMovie}
+        readonly={isReadOnly}
       />
     );
-  }, [openEditModal, handleDeleteMovie]);
+  }, [openEditModal, handleDeleteMovie, isReadOnly]);
 
   return (
     <View style={styles.container}>
@@ -129,32 +131,34 @@ export default function ListDetailScreen() {
           />
         )}
 
-        <View style={styles.fabContainer}>
-          <TouchableOpacity
-            style={styles.fabWrapper}
-            onPress={openSearchModal}
-            activeOpacity={0.8}
-          >
-            <GlassView intensity={40} style={[styles.fab, styles.searchFab]}>
-              <Search color={theme.colors.white} size={24} />
-            </GlassView>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.fabWrapper}
-            onPress={openCreateModal}
-            activeOpacity={0.8}
-          >
-            <LinearGradient
-              colors={[theme.colors.primary, theme.colors.secondary]}
-              style={styles.fabGradient}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
+        {!isReadOnly && (
+          <View style={styles.fabContainer}>
+            <TouchableOpacity
+              style={styles.fabWrapper}
+              onPress={openSearchModal}
+              activeOpacity={0.8}
             >
-              <Plus color={theme.colors.white} size={28} />
-            </LinearGradient>
-          </TouchableOpacity>
-        </View>
+              <GlassView intensity={40} style={[styles.fab, styles.searchFab]}>
+                <Search color={theme.colors.white} size={24} />
+              </GlassView>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.fabWrapper}
+              onPress={openCreateModal}
+              activeOpacity={0.8}
+            >
+              <LinearGradient
+                colors={[theme.colors.primary, theme.colors.secondary]}
+                style={styles.fabGradient}
+                start={{ x: 0, y: 0 }}
+                end={{ x: 1, y: 1 }}
+              >
+                <Plus color={theme.colors.white} size={28} />
+              </LinearGradient>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
 
       {/* Create New Movie Modal */}
