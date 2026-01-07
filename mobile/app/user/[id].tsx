@@ -11,7 +11,9 @@ import { relationshipService, FollowStats } from '../../src/services/api/relatio
 import { useAppContext } from '../../src/context/AppContext';
 import { UserProfile, MovieList } from '../../src/types';
 import { profileService } from '../../src/services/api/profileService';
+import { podiumService } from '../../src/services/api/podiumService';
 import { supabase } from '../../src/lib/supabase';
+import Podium from '../../src/features/podium/components/Podium';
 
 export default function PublicProfileScreen() {
     const { id } = useLocalSearchParams<{ id: string }>();
@@ -21,6 +23,7 @@ export default function PublicProfileScreen() {
     const [profile, setProfile] = useState<UserProfile | null>(null);
     const [lists, setLists] = useState<MovieList[]>([]);
     const [followStats, setFollowStats] = useState<FollowStats | null>(null);
+    const [podium, setPodium] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -67,6 +70,10 @@ export default function PublicProfileScreen() {
             // 3. Fetch Follow Stats
             const stats = await relationshipService.getFollowStats(id, currentUserId);
             setFollowStats(stats);
+
+            // 4. Fetch Podium
+            const podiumData = await podiumService.getPodium(id);
+            setPodium(podiumData);
 
         } catch (e) {
             console.error('Error loading public profile:', e);
@@ -179,6 +186,13 @@ export default function PublicProfileScreen() {
                     onFollowersPress={() => router.push(`/user/${id}/network?type=followers`)}
                     onFollowingPress={() => router.push(`/user/${id}/network?type=following`)}
                 />
+
+                {podium.length > 0 && (
+                    <View style={{ padding: theme.spacing.m }}>
+                        <Typography variant="h3" style={{ color: theme.colors.text.primary, marginBottom: theme.spacing.s, textAlign: 'center' }}>Top 3</Typography>
+                        <Podium entries={podium} editable={false} />
+                    </View>
+                )}
             </ScrollView>
         </View>
     );

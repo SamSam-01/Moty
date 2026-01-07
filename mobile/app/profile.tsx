@@ -11,13 +11,22 @@ import Button from '../src/components/ui/Button';
 import PublicProfileView from '../src/features/profile/components/PublicProfileView';
 
 import { relationshipService, FollowStats } from '../src/services/api/relationshipService';
+import { podiumService } from '../src/services/api/podiumService';
+import Podium from '../src/features/podium/components/Podium';
+import { PodiumEntry } from '../src/types';
 
 export default function ProfileScreen() {
     const { profile, lists, session } = useAppContext();
     const [followStats, setFollowStats] = React.useState<FollowStats | null>(null);
+    const [podium, setPodium] = React.useState<PodiumEntry[]>([]);
 
     React.useEffect(() => {
         if (session?.user?.id) {
+            // Load Podium
+            podiumService.getPodium(session.user.id)
+                .then(setPodium)
+                .catch(console.error);
+
             relationshipService.getFollowStats(session.user.id)
                 .then(setFollowStats)
                 .catch(console.error);
@@ -63,11 +72,21 @@ export default function ProfileScreen() {
                     stats={followStats ? {
                         followers: followStats.followersCount,
                         following: followStats.followingCount,
-                        isFollowing: false // Not relevant for owner
+                        isFollowing: false,
+                        isPending: false
                     } : undefined}
                     onFollowersPress={() => router.push(`/user/${session?.user?.id}/network?type=followers`)}
                     onFollowingPress={() => router.push(`/user/${session?.user?.id}/network?type=following`)}
                 />
+
+                <View style={{ paddingHorizontal: theme.spacing.m, marginBottom: theme.spacing.xl }}>
+                    <Typography variant="h3" style={{ color: theme.colors.text.primary, marginBottom: theme.spacing.s, textAlign: 'center' }}>My Top 3</Typography>
+                    <Podium
+                        entries={podium}
+                        editable={true}
+                        onPressSlot={(rank) => router.push(`/movie-search?rank=${rank}`)}
+                    />
+                </View>
 
                 {/* Friend Requests Section */}
 

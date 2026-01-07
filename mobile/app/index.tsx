@@ -11,11 +11,14 @@ import { router, useFocusEffect } from 'expo-router';
 import { Plus, User, Search, Bell } from 'lucide-react-native';
 import { useMovieLists, ListCard, ListFormModal } from '../src/features/lists';
 import { relationshipService } from '../src/services/api/relationshipService';
+import { podiumService } from '../src/services/api/podiumService';
 import { useAppContext } from '../src/context/AppContext';
 import { theme } from '../src/theme';
 import GlassView from '../src/components/ui/GlassView';
 import Typography from '../src/components/ui/Typography';
 import { LinearGradient } from 'expo-linear-gradient';
+import Podium from '../src/features/podium/components/Podium';
+import { PodiumEntry } from '../src/types';
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -51,20 +54,27 @@ export default function HomeScreen() {
   } = useMovieLists();
   const { session } = useAppContext();
   const [unreadCount, setUnreadCount] = React.useState(0);
+  const [podium, setPodium] = React.useState<PodiumEntry[]>([]);
 
   useFocusEffect(
     React.useCallback(() => {
       if (session?.user?.id) {
-        console.log('[HomeScreen] Fetching unread count for:', session.user.id);
+        // Load Podium
+        podiumService.getPodium(session.user.id)
+          .then(setPodium)
+          .catch(console.error);
+
+        // Load Notifications
         relationshipService.getUnreadCount(session.user.id)
-          .then((count) => {
-            console.log('[HomeScreen] Unread count:', count);
-            setUnreadCount(count);
-          })
+          .then(count => setUnreadCount(count))
           .catch(console.error);
       }
     }, [session?.user?.id])
   );
+
+  const handlePodiumPress = (rank: 1 | 2 | 3) => {
+    router.push(`/movie-search?rank=${rank}`);
+  };
 
 
   const scrollY = useSharedValue(0);
@@ -164,6 +174,10 @@ export default function HomeScreen() {
                 </TouchableOpacity>
               </View>
             </View>
+
+            <View style={{ marginBottom: theme.spacing.xl }}>
+              <Podium entries={podium} editable={true} onPressSlot={handlePodiumPress} />
+            </View>
             <Typography variant="body" style={styles.subtitle}>
               {lists.length} {lists.length === 1 ? 'Collection' : 'Collections'}
             </Typography>
@@ -211,7 +225,7 @@ export default function HomeScreen() {
         isPinned={isPinned}
         setIsPinned={setIsPinned}
       />
-    </View>
+    </View >
   );
 }
 

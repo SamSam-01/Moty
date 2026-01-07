@@ -30,3 +30,12 @@ export interface UserProfile {
   is_public?: boolean;
   updated_at?: string;
 }
+
+export interface PodiumEntry {
+  id: string;
+  user_id: string;
+  tmdb_id: string;
+  movie_data: Movie;
+  rank: 1 | 2 | 3;
+  created_at: string;
+}
