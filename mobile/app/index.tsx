@@ -11,11 +11,14 @@ import { router, useFocusEffect } from 'expo-router';
 import { Plus, User, Search, Bell } from 'lucide-react-native';
 import { useMovieLists, ListCard, ListFormModal } from '../src/features/lists';
 import { relationshipService } from '../src/services/api/relationshipService';
+import { podiumService } from '../src/services/api/podiumService';
 import { useAppContext } from '../src/context/AppContext';
 import { theme } from '../src/theme';
 import GlassView from '../src/components/ui/GlassView';
 import Typography from '../src/components/ui/Typography';
 import { LinearGradient } from 'expo-linear-gradient';
+import Podium from '../src/features/podium/components/Podium';
+import { PodiumEntry } from '../src/types';
 import Animated, {
   useAnimatedScrollHandler,
   useSharedValue,
@@ -23,6 +26,7 @@ import Animated, {
   interpolate,
   Extrapolate
 } from 'react-native-reanimated';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -51,20 +55,27 @@ export default function HomeScreen() {
   } = useMovieLists();
   const { session } = useAppContext();
   const [unreadCount, setUnreadCount] = React.useState(0);
+  const [podium, setPodium] = React.useState<PodiumEntry[]>([]);
 
   useFocusEffect(
     React.useCallback(() => {
       if (session?.user?.id) {
-        console.log('[HomeScreen] Fetching unread count for:', session.user.id);
+        // Load Podium
+        podiumService.getPodium(session.user.id)
+          .then(setPodium)
+          .catch(console.error);
+
+        // Load Notifications
         relationshipService.getUnreadCount(session.user.id)
-          .then((count) => {
-            console.log('[HomeScreen] Unread count:', count);
-            setUnreadCount(count);
-          })
+          .then(count => setUnreadCount(count))
           .catch(console.error);
       }
     }, [session?.user?.id])
   );
+
+  const handlePodiumPress = (rank: 1 | 2 | 3) => {
+    router.push(`/movie-search?rank=${rank}`);
+  };
 
 
   const scrollY = useSharedValue(0);
@@ -106,7 +117,6 @@ export default function HomeScreen() {
       <Animated.View style={[styles.stickyHeader, headerStyle]}>
         <GlassView intensity={80} style={StyleSheet.absoluteFill} />
         <View style={styles.headerContent}>
-          <Typography variant="h3" style={styles.headerTitleSmall}>My Rankings</Typography>
           <View style={styles.headerRight}>
             <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.iconButton}>
               <View style={styles.bellContainer}>
@@ -143,31 +153,37 @@ export default function HomeScreen() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         ListHeaderComponent={
-          <View style={styles.largeHeader}>
-            <View style={styles.largeHeaderTop}>
-              <View>
-                <Typography variant="caption" style={styles.greeting}>Welcome back</Typography>
-                <Typography variant="h1" style={styles.headerTitleLarge}>My Rankings</Typography>
+          <ScrollView>
+            <View style={styles.largeHeader}>
+              <View style={styles.largeHeaderTop}>
+                <View>
+                  <Typography variant="caption" style={styles.greeting}>Welcome back</Typography>
+                  <Typography variant="h1" style={styles.headerTitleLarge}>My Rankings</Typography>
+                </View>
+                <View style={styles.headerActions}>
+                  <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.actionButton}>
+                    <View style={styles.bellContainer}>
+                      <Bell color={theme.colors.text.secondary} size={24} />
+                      {unreadCount > 0 && <View style={styles.badgeLarge} />}
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => router.push('/search')} style={styles.actionButton}>
+                    <Search color={theme.colors.text.secondary} size={24} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={navigateToProfile} style={styles.actionButton}>
+                    <User color={theme.colors.text.secondary} size={24} />
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View style={styles.headerActions}>
-                <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.actionButton}>
-                  <View style={styles.bellContainer}>
-                    <Bell color={theme.colors.text.secondary} size={24} />
-                    {unreadCount > 0 && <View style={styles.badgeLarge} />}
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push('/search')} style={styles.actionButton}>
-                  <Search color={theme.colors.text.secondary} size={24} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={navigateToProfile} style={styles.actionButton}>
-                  <User color={theme.colors.text.secondary} size={24} />
-                </TouchableOpacity>
+
+              <View style={{ marginBottom: theme.spacing.xl }}>
+                <Podium entries={podium} editable={true} onPressSlot={handlePodiumPress} />
               </View>
+              <Typography variant="body" style={styles.subtitle}>
+                {lists.length} {lists.length === 1 ? 'Collection' : 'Collections'}
+              </Typography>
             </View>
-            <Typography variant="body" style={styles.subtitle}>
-              {lists.length} {lists.length === 1 ? 'Collection' : 'Collections'}
-            </Typography>
-          </View>
+          </ScrollView>
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
@@ -211,7 +227,7 @@ export default function HomeScreen() {
         isPinned={isPinned}
         setIsPinned={setIsPinned}
       />
-    </View>
+    </View >
   );
 }
 

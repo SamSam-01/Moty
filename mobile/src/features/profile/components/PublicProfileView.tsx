@@ -7,6 +7,9 @@ import GlassView from '../../../components/ui/GlassView';
 import Typography from '../../../components/ui/Typography';
 import { MovieList, UserProfile } from '../../../types';
 import { ListCard } from '../../lists';
+import Podium from '../../podium/components/Podium';
+import { PodiumEntry } from '../../../types';
+import { ScrollView } from 'react-native-gesture-handler';
 
 interface PublicProfileViewProps {
     profile: UserProfile | null;
@@ -22,6 +25,8 @@ interface PublicProfileViewProps {
     };
     onFollowersPress?: () => void;
     onFollowingPress?: () => void;
+    podium?: PodiumEntry[];
+    onPodiumPress?: (rank: 1 | 2 | 3) => void;
 }
 
 export default function PublicProfileView({
@@ -33,125 +38,141 @@ export default function PublicProfileView({
     stats,
     onFollowersPress,
     onFollowingPress,
+    podium = [],
+    onPodiumPress,
 }: PublicProfileViewProps) {
     const isPublic = profile?.is_public ?? true;
     const canViewLists = isPublic || stats?.isFollowing || isOwner;
 
     return (
         <View>
-            <GlassView intensity={20} style={styles.profileCard}>
-                <View style={styles.avatarContainer}>
-                    <LinearGradient
-                        colors={[theme.colors.primary, theme.colors.secondary]}
-                        style={styles.avatar}
-                    >
-                        <Typography variant="h1" style={styles.avatarText}>
-                            {profile?.username?.[0]?.toUpperCase() || 'U'}
+            <ScrollView>
+                <GlassView intensity={20} style={styles.profileCard}>
+                    <View style={styles.avatarContainer}>
+                        <LinearGradient
+                            colors={[theme.colors.primary, theme.colors.secondary]}
+                            style={styles.avatar}
+                        >
+                            <Typography variant="h1" style={styles.avatarText}>
+                                {profile?.username?.[0]?.toUpperCase() || 'U'}
+                            </Typography>
+                        </LinearGradient>
+                        <Typography variant="h2" style={styles.usernameTitle}>
+                            {profile?.username || 'User'}
                         </Typography>
-                    </LinearGradient>
-                    <Typography variant="h2" style={styles.usernameTitle}>
-                        {profile?.username || 'User'}
-                    </Typography>
-                </View>
-
-                {/* Stats & Actions */}
-                <View style={styles.statsContainer}>
-                    <TouchableOpacity
-                        onPress={canViewLists ? onFollowersPress : undefined}
-                        style={styles.statItem}
-                        activeOpacity={canViewLists ? 0.7 : 1}
-                    >
-                        <Typography variant="h3" style={styles.statValue}>{stats?.followers || 0}</Typography>
-                        <Typography variant="caption" style={styles.statLabel}>Followers</Typography>
-                    </TouchableOpacity>
-                    <View style={styles.divider} />
-                    <TouchableOpacity
-                        onPress={canViewLists ? onFollowingPress : undefined}
-                        style={styles.statItem}
-                        activeOpacity={canViewLists ? 0.7 : 1}
-                    >
-                        <Typography variant="h3" style={styles.statValue}>{stats?.following || 0}</Typography>
-                        <Typography variant="caption" style={styles.statLabel}>Following</Typography>
-                    </TouchableOpacity>
-                </View>
-
-                {/* Private Content Placeholder */}
-                {!canViewLists ? (
-                    <View style={styles.privateContainer}>
-                        <Lock color={theme.colors.text.secondary} size={48} />
-                        <Typography variant="h3" style={styles.privateText}>This profile is private</Typography>
-
-                        {!isOwner && (
-                            <TouchableOpacity
-                                style={[
-                                    styles.followButton,
-                                    stats?.isFollowing && styles.followingButton,
-                                    stats?.isPending && styles.pendingButton
-                                ]}
-                                onPress={stats?.isFollowing ? onUnfollow : (stats?.isPending ? () => { } : onFollow)}
-                                disabled={stats?.isPending}
-                            >
-                                <Typography
-                                    variant="body"
-                                    style={[
-                                        styles.followButtonText,
-                                        (stats?.isFollowing || stats?.isPending) && styles.followingButtonText
-                                    ]}
-                                >
-                                    {stats?.isFollowing ? 'Following' : (stats?.isPending ? 'Requested' : 'Follow')}
-                                </Typography>
-                            </TouchableOpacity>
-                        )}
                     </View>
-                ) : (
-                    <>
-                        {!isOwner && (
-                            <TouchableOpacity
-                                style={[
-                                    styles.followButton,
-                                    stats?.isFollowing && styles.followingButton,
-                                    stats?.isPending && styles.pendingButton
-                                ]}
-                                onPress={stats?.isFollowing ? onUnfollow : (stats?.isPending ? () => { } : onFollow)}
-                                disabled={stats?.isPending}
-                            >
-                                <Typography
-                                    variant="body"
+
+                    {/* Stats & Actions */}
+                    <View style={styles.statsContainer}>
+                        <TouchableOpacity
+                            onPress={canViewLists ? onFollowersPress : undefined}
+                            style={styles.statItem}
+                            activeOpacity={canViewLists ? 0.7 : 1}
+                        >
+                            <Typography variant="h3" style={styles.statValue}>{stats?.followers || 0}</Typography>
+                            <Typography variant="caption" style={styles.statLabel}>Followers</Typography>
+                        </TouchableOpacity>
+                        <View style={styles.divider} />
+                        <TouchableOpacity
+                            onPress={canViewLists ? onFollowingPress : undefined}
+                            style={styles.statItem}
+                            activeOpacity={canViewLists ? 0.7 : 1}
+                        >
+                            <Typography variant="h3" style={styles.statValue}>{stats?.following || 0}</Typography>
+                            <Typography variant="caption" style={styles.statLabel}>Following</Typography>
+                        </TouchableOpacity>
+                    </View>
+
+                    {/* Private Content Placeholder */}
+                    {!canViewLists ? (
+                        <View style={styles.privateContainer}>
+                            <Lock color={theme.colors.text.secondary} size={48} />
+                            <Typography variant="h3" style={styles.privateText}>This profile is private</Typography>
+
+                            {!isOwner && (
+                                <TouchableOpacity
                                     style={[
-                                        styles.followButtonText,
-                                        (stats?.isFollowing || stats?.isPending) && styles.followingButtonText
+                                        styles.followButton,
+                                        stats?.isFollowing && styles.followingButton,
+                                        stats?.isPending && styles.pendingButton
                                     ]}
+                                    onPress={stats?.isFollowing ? onUnfollow : (stats?.isPending ? () => { } : onFollow)}
+                                    disabled={stats?.isPending}
                                 >
-                                    {stats?.isFollowing ? 'Following' : (stats?.isPending ? 'Requested' : 'Follow')}
-                                </Typography>
-                            </TouchableOpacity>
-                        )}
-                    </>
+                                    <Typography
+                                        variant="body"
+                                        style={[
+                                            styles.followButtonText,
+                                            (stats?.isFollowing || stats?.isPending) && styles.followingButtonText
+                                        ]}
+                                    >
+                                        {stats?.isFollowing ? 'Following' : (stats?.isPending ? 'Requested' : 'Follow')}
+                                    </Typography>
+                                </TouchableOpacity>
+                            )}
+                        </View>
+                    ) : (
+                        <>
+                            {!isOwner && (
+                                <TouchableOpacity
+                                    style={[
+                                        styles.followButton,
+                                        stats?.isFollowing && styles.followingButton,
+                                        stats?.isPending && styles.pendingButton
+                                    ]}
+                                    onPress={stats?.isFollowing ? onUnfollow : (stats?.isPending ? () => { } : onFollow)}
+                                    disabled={stats?.isPending}
+                                >
+                                    <Typography
+                                        variant="body"
+                                        style={[
+                                            styles.followButtonText,
+                                            (stats?.isFollowing || stats?.isPending) && styles.followingButtonText
+                                        ]}
+                                    >
+                                        {stats?.isFollowing ? 'Following' : (stats?.isPending ? 'Requested' : 'Follow')}
+                                    </Typography>
+                                </TouchableOpacity>
+                            )}
+                        </>
+                    )}
+                </GlassView>
+
+                {/* Podium Section */}
+                {canViewLists && podium.length > 0 && (
+                    <View style={{ marginBottom: theme.spacing.l, paddingHorizontal: theme.spacing.m }}>
+                        <Typography variant="h3" style={{ color: theme.colors.text.primary, marginBottom: theme.spacing.s, textAlign: 'center' }}>Top 3</Typography>
+                        <Podium
+                            entries={podium}
+                            editable={!!onPodiumPress}
+                            onPressSlot={onPodiumPress}
+                        />
+                    </View>
                 )}
-            </GlassView>
 
-            {/* Pinned Lists Section */}
-            {canViewLists && lists.length > 0 && (
-                <View style={styles.pinnedSection}>
-                    <View style={styles.pinnedHeader}>
-                        <Pin color={theme.colors.primary} size={20} style={{ transform: [{ rotate: '45deg' }] }} />
-                        <Typography variant="h3" style={styles.sectionTitle}>Pinned Lists</Typography>
+                {/* Pinned Lists Section */}
+                {canViewLists && lists.length > 0 && (
+                    <View style={styles.pinnedSection}>
+                        <View style={styles.pinnedHeader}>
+                            <Pin color={theme.colors.primary} size={20} style={{ transform: [{ rotate: '45deg' }] }} />
+                            <Typography variant="h3" style={styles.sectionTitle}>Pinned Lists</Typography>
+                        </View>
+                        <View style={styles.pinnedListContainer}>
+                            {lists.map((list, index) => (
+                                <ListCard
+                                    key={list.id}
+                                    list={list}
+                                    index={index}
+                                    onPress={() => { }} // Navigate to list details (if implemented)
+                                    onEdit={() => { }}
+                                    onDelete={() => { }}
+                                    readonly={true}
+                                />
+                            ))}
+                        </View>
                     </View>
-                    <View style={styles.pinnedListContainer}>
-                        {lists.map((list, index) => (
-                            <ListCard
-                                key={list.id}
-                                list={list}
-                                index={index}
-                                onPress={() => { }} // Navigate to list details (if implemented)
-                                onEdit={() => { }}
-                                onDelete={() => { }}
-                                readonly={true}
-                            />
-                        ))}
-                    </View>
-                </View>
-            )}
+                )}
+            </ScrollView>
         </View>
     );
 }
