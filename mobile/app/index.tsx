@@ -26,6 +26,7 @@ import Animated, {
   interpolate,
   Extrapolate
 } from 'react-native-reanimated';
+import { ScrollView } from 'react-native-gesture-handler';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
@@ -116,7 +117,6 @@ export default function HomeScreen() {
       <Animated.View style={[styles.stickyHeader, headerStyle]}>
         <GlassView intensity={80} style={StyleSheet.absoluteFill} />
         <View style={styles.headerContent}>
-          <Typography variant="h3" style={styles.headerTitleSmall}>My Rankings</Typography>
           <View style={styles.headerRight}>
             <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.iconButton}>
               <View style={styles.bellContainer}>
@@ -153,35 +153,37 @@ export default function HomeScreen() {
         onScroll={scrollHandler}
         scrollEventThrottle={16}
         ListHeaderComponent={
-          <View style={styles.largeHeader}>
-            <View style={styles.largeHeaderTop}>
-              <View>
-                <Typography variant="caption" style={styles.greeting}>Welcome back</Typography>
-                <Typography variant="h1" style={styles.headerTitleLarge}>My Rankings</Typography>
+          <ScrollView>
+            <View style={styles.largeHeader}>
+              <View style={styles.largeHeaderTop}>
+                <View>
+                  <Typography variant="caption" style={styles.greeting}>Welcome back</Typography>
+                  <Typography variant="h1" style={styles.headerTitleLarge}>My Rankings</Typography>
+                </View>
+                <View style={styles.headerActions}>
+                  <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.actionButton}>
+                    <View style={styles.bellContainer}>
+                      <Bell color={theme.colors.text.secondary} size={24} />
+                      {unreadCount > 0 && <View style={styles.badgeLarge} />}
+                    </View>
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={() => router.push('/search')} style={styles.actionButton}>
+                    <Search color={theme.colors.text.secondary} size={24} />
+                  </TouchableOpacity>
+                  <TouchableOpacity onPress={navigateToProfile} style={styles.actionButton}>
+                    <User color={theme.colors.text.secondary} size={24} />
+                  </TouchableOpacity>
+                </View>
               </View>
-              <View style={styles.headerActions}>
-                <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.actionButton}>
-                  <View style={styles.bellContainer}>
-                    <Bell color={theme.colors.text.secondary} size={24} />
-                    {unreadCount > 0 && <View style={styles.badgeLarge} />}
-                  </View>
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => router.push('/search')} style={styles.actionButton}>
-                  <Search color={theme.colors.text.secondary} size={24} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={navigateToProfile} style={styles.actionButton}>
-                  <User color={theme.colors.text.secondary} size={24} />
-                </TouchableOpacity>
-              </View>
-            </View>
 
-            <View style={{ marginBottom: theme.spacing.xl }}>
-              <Podium entries={podium} editable={true} onPressSlot={handlePodiumPress} />
+              <View style={{ marginBottom: theme.spacing.xl }}>
+                <Podium entries={podium} editable={true} onPressSlot={handlePodiumPress} />
+              </View>
+              <Typography variant="body" style={styles.subtitle}>
+                {lists.length} {lists.length === 1 ? 'Collection' : 'Collections'}
+              </Typography>
             </View>
-            <Typography variant="body" style={styles.subtitle}>
-              {lists.length} {lists.length === 1 ? 'Collection' : 'Collections'}
-            </Typography>
-          </View>
+          </ScrollView>
         }
         ListEmptyComponent={
           <View style={styles.emptyState}>
