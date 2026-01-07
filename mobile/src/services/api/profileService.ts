@@ -76,6 +76,7 @@ export const profileService = {
             .insert({
                 id: userId,
                 username,
+                is_public: true, // Default to public
                 updated_at: new Date().toISOString(),
             });
 
