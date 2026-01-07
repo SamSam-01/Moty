@@ -3,6 +3,7 @@ import React from 'react';
 import {
     StyleSheet,
     View,
+    Switch,
 } from 'react-native';
 import { theme } from '../../../theme';
 import Modal from '../../../components/ui/Modal';
@@ -25,7 +26,10 @@ interface ListFormModalProps {
     color?: string;
     setColor: (color: string | undefined) => void;
     filters?: MovieFilters;
+    filters?: MovieFilters;
     setFilters: (filters: MovieFilters | undefined) => void;
+    isPinned?: boolean;
+    setIsPinned?: (isPinned: boolean) => void;
 }
 
 const COLORS = [
@@ -52,6 +56,8 @@ export default function ListFormModal({
     setColor,
     filters,
     setFilters,
+    isPinned,
+    setIsPinned,
 }: ListFormModalProps) {
     const [genres, setGenres] = useState<TMDBGenre[]>([]);
 
@@ -84,6 +90,21 @@ export default function ListFormModal({
                     placeholder="e.g., Top 2024 Movies"
                     error={error || undefined}
                 />
+
+                {setIsPinned && (
+                    <View style={styles.switchContainer}>
+                        <View>
+                            <Typography variant="body" style={styles.switchLabel}>Pin to Profile</Typography>
+                            <Typography variant="caption" style={styles.switchSubLabel}>Show this list publicly on your profile</Typography>
+                        </View>
+                        <Switch
+                            value={isPinned}
+                            onValueChange={setIsPinned}
+                            trackColor={{ false: 'rgba(255,255,255,0.1)', true: theme.colors.primary }}
+                            thumbColor={theme.colors.white}
+                        />
+                    </View>
+                )}
 
                 <View style={styles.section}>
                     <Typography variant="h3" style={styles.sectionTitle}>Color Theme</Typography>

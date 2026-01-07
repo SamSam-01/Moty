@@ -12,6 +12,7 @@ export function useMovieLists() {
   const [title, setTitle] = useState('');
   const [color, setColor] = useState<string | undefined>(undefined);
   const [filters, setFilters] = useState<MovieFilters | undefined>(undefined);
+  const [isPinned, setIsPinned] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
   const openCreateModal = () => {
@@ -27,6 +28,7 @@ export function useMovieLists() {
     setTitle(list.title);
     setColor(list.color);
     setFilters(list.filters);
+    setIsPinned(!!list.isPinned);
     setFormError(null);
     setIsEditing(true);
   };
@@ -52,6 +54,7 @@ export function useMovieLists() {
         title: title.trim(),
         color,
         filters,
+        isPinned,
       });
       closeModals();
     } catch (error) {
@@ -70,9 +73,9 @@ export function useMovieLists() {
     try {
       await updateList({
         ...currentList,
-        title: title.trim(),
         color,
         filters,
+        isPinned,
       });
       closeModals();
     } catch (error) {
@@ -115,6 +118,8 @@ export function useMovieLists() {
     setColor,
     filters,
     setFilters,
+    isPinned,
+    setIsPinned,
     formError,
     openCreateModal,
     openEditModal,

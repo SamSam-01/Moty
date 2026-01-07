@@ -7,6 +7,7 @@ export interface MovieList {
   imageUrl?: string;
   color?: string;
   filters?: MovieFilters;
+  isPinned?: boolean;
 }
 
 export interface Movie {

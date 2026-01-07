@@ -18,11 +18,12 @@ export const listService = {
       imageUrl: item.image_url,
       color: item.color,
       filters: item.filters,
+      isPinned: item.is_pinned,
       createdAt: new Date(item.created_at).getTime(),
     }));
   },
 
-  async addList(title: string, color?: string, filters?: MovieFilters): Promise<void> {
+  async addList(title: string, color?: string, filters?: MovieFilters, isPinned?: boolean): Promise<void> {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not found');
 
@@ -33,18 +34,20 @@ export const listService = {
         user_id: user.id,
         color,
         filters,
+        is_pinned: isPinned,
       });
 
     if (error) throw error;
   },
 
-  async updateList(id: string, title: string, color?: string, filters?: MovieFilters): Promise<void> {
+  async updateList(id: string, title: string, color?: string, filters?: MovieFilters, isPinned?: boolean): Promise<void> {
     const { error } = await supabase
       .from('lists')
       .update({
         name: title, // Use 'name' column
         color,
         filters,
+        is_pinned: isPinned,
       })
       .eq('id', id);
 

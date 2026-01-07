@@ -19,6 +19,7 @@ interface ListCardProps {
     onEdit: (list: MovieList) => void;
     onDelete: (listId: string) => void;
     index?: number;
+    readonly?: boolean;
 }
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -26,7 +27,7 @@ const COLUMN_SPACING = theme.spacing.m;
 const CARD_WIDTH = (SCREEN_WIDTH - (theme.spacing.m * 3)) / 2;
 const CARD_HEIGHT = CARD_WIDTH * 1.2; // Slightly shorter than before since no image
 
-export default function ListCard({ list, onPress, onEdit, onDelete, index = 0 }: ListCardProps) {
+export default function ListCard({ list, onPress, onEdit, onDelete, index = 0, readonly = false }: ListCardProps) {
     return (
         <Animated.View
             entering={FadeInUp.delay(index * 100).springify()}
@@ -57,22 +58,24 @@ export default function ListCard({ list, onPress, onEdit, onDelete, index = 0 }:
                         </Typography>
                     </View>
 
-                    <View style={styles.actions}>
-                        <TouchableOpacity
-                            onPress={() => onEdit(list)}
-                            hitSlop={10}
-                            style={styles.actionIcon}
-                        >
-                            <Edit2 color={theme.colors.text.secondary} size={16} />
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                            onPress={() => onDelete(list.id)}
-                            hitSlop={10}
-                            style={styles.actionIcon}
-                        >
-                            <Trash2 color={theme.colors.error} size={16} />
-                        </TouchableOpacity>
-                    </View>
+                    {!readonly && (
+                        <View style={styles.actions}>
+                            <TouchableOpacity
+                                onPress={() => onEdit(list)}
+                                hitSlop={10}
+                                style={styles.actionIcon}
+                            >
+                                <Edit2 color={theme.colors.text.secondary} size={16} />
+                            </TouchableOpacity>
+                            <TouchableOpacity
+                                onPress={() => onDelete(list.id)}
+                                hitSlop={10}
+                                style={styles.actionIcon}
+                            >
+                                <Trash2 color={theme.colors.error} size={16} />
+                            </TouchableOpacity>
+                        </View>
+                    )}
                 </GlassView>
             </TouchableOpacity>
         </Animated.View>
