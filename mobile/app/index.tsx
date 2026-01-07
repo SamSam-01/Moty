@@ -7,9 +7,11 @@ import {
   FlatList,
   StatusBar,
 } from 'react-native';
-import { router } from 'expo-router';
+import { router, useFocusEffect } from 'expo-router';
 import { Plus, User, Search, Bell } from 'lucide-react-native';
 import { useMovieLists, ListCard, ListFormModal } from '../src/features/lists';
+import { relationshipService } from '../src/services/api/relationshipService';
+import { useAppContext } from '../src/context/AppContext';
 import { theme } from '../src/theme';
 import GlassView from '../src/components/ui/GlassView';
 import Typography from '../src/components/ui/Typography';
@@ -47,6 +49,23 @@ export default function HomeScreen() {
     handleUpdateList,
     handleDeleteList,
   } = useMovieLists();
+  const { session } = useAppContext();
+  const [unreadCount, setUnreadCount] = React.useState(0);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      if (session?.user?.id) {
+        console.log('[HomeScreen] Fetching unread count for:', session.user.id);
+        relationshipService.getUnreadCount(session.user.id)
+          .then((count) => {
+            console.log('[HomeScreen] Unread count:', count);
+            setUnreadCount(count);
+          })
+          .catch(console.error);
+      }
+    }, [session?.user?.id])
+  );
+
 
   const scrollY = useSharedValue(0);
 
@@ -90,7 +109,10 @@ export default function HomeScreen() {
           <Typography variant="h3" style={styles.headerTitleSmall}>My Rankings</Typography>
           <View style={styles.headerRight}>
             <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.iconButton}>
-              <Bell color={theme.colors.text.primary} size={20} />
+              <View style={styles.bellContainer}>
+                <Bell color={theme.colors.text.primary} size={20} />
+                {unreadCount > 0 && <View style={styles.badge} />}
+              </View>
             </TouchableOpacity>
             <TouchableOpacity onPress={() => router.push('/search')} style={styles.iconButton}>
               <Search color={theme.colors.text.primary} size={20} />
@@ -129,7 +151,10 @@ export default function HomeScreen() {
               </View>
               <View style={styles.headerActions}>
                 <TouchableOpacity onPress={() => router.push('/notifications')} style={styles.actionButton}>
-                  <Bell color={theme.colors.text.secondary} size={24} />
+                  <View style={styles.bellContainer}>
+                    <Bell color={theme.colors.text.secondary} size={24} />
+                    {unreadCount > 0 && <View style={styles.badgeLarge} />}
+                  </View>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => router.push('/search')} style={styles.actionButton}>
                   <Search color={theme.colors.text.secondary} size={24} />
@@ -295,7 +320,34 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 32,
+  },
+  bellContainer: {
+    position: 'relative',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    width: 10,
+    height: 10,
+    borderRadius: 5,
+    backgroundColor: '#EF4444', // Hardcoded red to ensure visibility
+    borderWidth: 2,
+    borderColor: '#1e1b4b',
+    zIndex: 10,
+  },
+  badgeLarge: {
+    position: 'absolute',
+    top: -2,
+    right: -2,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#EF4444', // Hardcoded red
+    borderWidth: 2,
+    borderColor: '#1e1b4b',
+    zIndex: 10,
+  }
 });

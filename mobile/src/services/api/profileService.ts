@@ -97,5 +97,22 @@ export const profileService = {
 
         if (error) throw error;
         return data || [];
+        if (error) throw error;
+        return data || [];
+    },
+
+    /**
+     * Update Push Token for user
+     */
+    async registerPushToken(userId: string, token: string): Promise<void> {
+        const { error } = await supabase
+            .from('profiles')
+            .update({ push_token: token })
+            .eq('id', userId);
+
+        if (error) {
+            console.error('Error updating push token:', error);
+            // Don't throw, just log. Not critical.
+        }
     }
 };

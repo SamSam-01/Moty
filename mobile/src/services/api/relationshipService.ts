@@ -161,5 +161,48 @@ export const relationshipService = {
             .eq('id', requestId);
 
         if (error) throw error;
+    },
+
+    async getUnreadCount(userId: string): Promise<number> {
+        const { count, error } = await supabase
+            .from('relationships')
+            .select('*', { count: 'exact', head: true })
+            .eq('following_id', userId)
+            .eq('status', 'pending');
+
+        if (error) throw error;
+        if (error) throw error;
+        return count || 0;
+    },
+
+    async getRecentFollowers(userId: string): Promise<PendingRequest[]> {
+        const { data, error } = await supabase
+            .from('relationships')
+            .select(`
+                id,
+                created_at,
+                follower:profiles!follower_id (
+                    id,
+                    username,
+                    avatar_url
+                )
+            `)
+            .eq('following_id', userId)
+            .eq('status', 'accepted')
+            .order('created_at', { ascending: false })
+            .limit(20);
+
+        if (error) throw error;
+
+        // Map correct type from join (reusing PendingRequest structure for simplicity as it fits)
+        return (data || []).map((item: any) => ({
+            id: item.id,
+            created_at: item.created_at,
+            follower: {
+                id: item.follower.id,
+                username: item.follower.username,
+                avatar_url: item.follower.avatar_url,
+            }
+        }));
     }
 };

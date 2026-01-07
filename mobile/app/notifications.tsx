@@ -12,13 +12,18 @@ import { useAppContext } from '../src/context/AppContext';
 export default function NotificationsScreen() {
     const { session } = useAppContext();
     const [requests, setRequests] = useState<PendingRequest[]>([]);
+    const [newFollowers, setNewFollowers] = useState<PendingRequest[]>([]);
     const [refreshing, setRefreshing] = useState(false);
 
     const loadData = async () => {
         if (!session?.user?.id) return;
         try {
-            const data = await relationshipService.getPendingRequests(session.user.id);
-            setRequests(data);
+            const [pendingData, followersData] = await Promise.all([
+                relationshipService.getPendingRequests(session.user.id),
+                relationshipService.getRecentFollowers(session.user.id)
+            ]);
+            setRequests(pendingData);
+            setNewFollowers(followersData);
         } catch (error) {
             console.error('Error loading notifications:', error);
         }
@@ -82,7 +87,7 @@ export default function NotificationsScreen() {
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={theme.colors.primary} />
                 }
             >
-                {requests.length === 0 ? (
+                {requests.length === 0 && newFollowers.length === 0 ? (
                     <View style={styles.emptyState}>
                         <Bell color={theme.colors.text.secondary} size={48} style={{ opacity: 0.5, marginBottom: 16 }} />
                         <Typography variant="h3" style={styles.emptyText}>No new notifications</Typography>
@@ -92,43 +97,75 @@ export default function NotificationsScreen() {
                     </View>
                 ) : (
                     <View style={styles.listContainer}>
-                        <Typography variant="caption" style={styles.sectionTitle}>Follow Requests</Typography>
-                        {requests.map((req) => (
-                            <GlassView key={req.id} intensity={20} style={styles.requestCard}>
-                                <View style={styles.requestInfo}>
-                                    <LinearGradient
-                                        colors={[theme.colors.primary, theme.colors.secondary]}
-                                        style={styles.avatar}
-                                    >
-                                        <Typography variant="h3" style={{ color: '#fff' }}>
-                                            {req.follower.username[0]?.toUpperCase() || 'U'}
-                                        </Typography>
-                                    </LinearGradient>
-                                    <View>
-                                        <Typography variant="body" style={styles.username}>
-                                            {req.follower.username}
-                                        </Typography>
-                                        <Typography variant="caption" style={styles.actionText}>
-                                            wants to follow you
-                                        </Typography>
-                                    </View>
-                                </View>
-                                <View style={styles.actions}>
-                                    <TouchableOpacity
-                                        style={[styles.button, styles.acceptButton]}
-                                        onPress={() => handleAccept(req.id)}
-                                    >
-                                        <UserCheck color="#fff" size={20} />
-                                    </TouchableOpacity>
-                                    <TouchableOpacity
-                                        style={[styles.button, styles.declineButton]}
-                                        onPress={() => handleDecline(req.id)}
-                                    >
-                                        <UserX color="#fff" size={20} />
-                                    </TouchableOpacity>
-                                </View>
-                            </GlassView>
-                        ))}
+                        {requests.length > 0 && (
+                            <View style={styles.section}>
+                                <Typography variant="caption" style={styles.sectionTitle}>Follow Requests</Typography>
+                                {requests.map((req) => (
+                                    <GlassView key={req.id} intensity={20} style={styles.requestCard}>
+                                        <View style={styles.requestInfo}>
+                                            <LinearGradient
+                                                colors={[theme.colors.primary, theme.colors.secondary]}
+                                                style={styles.avatar}
+                                            >
+                                                <Typography variant="h3" style={{ color: '#fff' }}>
+                                                    {req.follower.username[0]?.toUpperCase() || 'U'}
+                                                </Typography>
+                                            </LinearGradient>
+                                            <View>
+                                                <Typography variant="body" style={styles.username}>
+                                                    {req.follower.username}
+                                                </Typography>
+                                                <Typography variant="caption" style={styles.actionText}>
+                                                    wants to follow you
+                                                </Typography>
+                                            </View>
+                                        </View>
+                                        <View style={styles.actions}>
+                                            <TouchableOpacity
+                                                style={[styles.button, styles.acceptButton]}
+                                                onPress={() => handleAccept(req.id)}
+                                            >
+                                                <UserCheck color="#fff" size={20} />
+                                            </TouchableOpacity>
+                                            <TouchableOpacity
+                                                style={[styles.button, styles.declineButton]}
+                                                onPress={() => handleDecline(req.id)}
+                                            >
+                                                <UserX color="#fff" size={20} />
+                                            </TouchableOpacity>
+                                        </View>
+                                    </GlassView>
+                                ))}
+                            </View>
+                        )}
+
+                        {newFollowers.length > 0 && (
+                            <View style={styles.section}>
+                                <Typography variant="caption" style={styles.sectionTitle}>New Followers</Typography>
+                                {newFollowers.map((req) => (
+                                    <GlassView key={req.id} intensity={10} style={styles.requestCard}>
+                                        <View style={styles.requestInfo}>
+                                            <LinearGradient
+                                                colors={[theme.colors.secondary, theme.colors.primary]} // Inverted gradient for visual distinction
+                                                style={styles.avatar}
+                                            >
+                                                <Typography variant="h3" style={{ color: '#fff' }}>
+                                                    {req.follower.username[0]?.toUpperCase() || 'U'}
+                                                </Typography>
+                                            </LinearGradient>
+                                            <View>
+                                                <Typography variant="body" style={styles.username}>
+                                                    {req.follower.username}
+                                                </Typography>
+                                                <Typography variant="caption" style={styles.actionText}>
+                                                    started following you
+                                                </Typography>
+                                            </View>
+                                        </View>
+                                    </GlassView>
+                                ))}
+                            </View>
+                        )}
                     </View>
                 )}
             </ScrollView>
@@ -185,6 +222,10 @@ const styles = StyleSheet.create({
     },
     listContainer: {
         marginTop: theme.spacing.m,
+        gap: theme.spacing.xl,
+    },
+    section: {
+        gap: theme.spacing.s,
     },
     sectionTitle: {
         color: theme.colors.text.secondary,
