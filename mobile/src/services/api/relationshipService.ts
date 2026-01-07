@@ -73,8 +73,6 @@ export const relationshipService = {
             console.error('Error fetching followers count:', followersError);
             throw followersError;
         }
-        console.log(`[getFollowStats] userId=${userId} followers=${followersCount}`);
-
         // Get Following Count
         const { count: followingCount, error: followingError } = await supabase
             .from('relationships')

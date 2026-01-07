@@ -66,7 +66,6 @@ export default function PublicProfileScreen() {
 
             // 3. Fetch Follow Stats
             const stats = await relationshipService.getFollowStats(id, currentUserId);
-            console.log('[PublicProfileScreen] Loaded stats:', stats);
             setFollowStats(stats);
 
         } catch (e) {
