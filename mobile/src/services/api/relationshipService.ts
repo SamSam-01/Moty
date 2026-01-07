@@ -172,7 +172,18 @@ export const relationshipService = {
 
         if (error) throw error;
         if (error) throw error;
-        return count || 0;
+
+        // Count unseen accepted followers
+        const { count: followersCount, error: followersError } = await supabase
+            .from('relationships')
+            .select('*', { count: 'exact', head: true })
+            .eq('following_id', userId)
+            .eq('status', 'accepted')
+            .eq('is_seen', false);
+
+        if (followersError) throw followersError;
+
+        return (count || 0) + (followersCount || 0);
     },
 
     async getRecentFollowers(userId: string): Promise<PendingRequest[]> {
@@ -204,5 +215,16 @@ export const relationshipService = {
                 avatar_url: item.follower.avatar_url,
             }
         }));
+    },
+
+    async markNotificationsAsRead(userId: string): Promise<void> {
+        const { error } = await supabase
+            .from('relationships')
+            .update({ is_seen: true })
+            .eq('following_id', userId)
+            .eq('status', 'accepted')
+            .eq('is_seen', false);
+
+        if (error) throw error;
     }
 };

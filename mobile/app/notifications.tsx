@@ -24,6 +24,9 @@ export default function NotificationsScreen() {
             ]);
             setRequests(pendingData);
             setNewFollowers(followersData);
+
+            // Mark as seen
+            await relationshipService.markNotificationsAsRead(session.user.id);
         } catch (error) {
             console.error('Error loading notifications:', error);
         }
