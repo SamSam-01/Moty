@@ -10,7 +10,7 @@ Frontend Mobile : React Native (Expo)
 
 Frontend Web : React
 
-Backend & Base de données : Firebase (Auth, Firestore, Storage)
+Backend & Base de données : Supabase (Auth, Storage)
 
 API Film : TheMovieDB (TMDB)
 
