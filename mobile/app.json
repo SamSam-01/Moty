@@ -10,7 +10,7 @@
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.moty"
+      "bundleIdentifier": "com.samuelblard.moty"
     },
     "web": {
       "bundler": "metro",
@@ -25,7 +25,7 @@
       "typedRoutes": true
     },
     "android": {
-      "package": "com.anonymous.moty"
+      "package": "com.samuelblard.moty"
     }
   }
 }
