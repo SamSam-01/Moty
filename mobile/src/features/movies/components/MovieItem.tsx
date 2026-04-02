@@ -16,7 +16,6 @@ interface MovieItemProps {
     drag: () => void;
     isActive: boolean;
     medalEmoji?: string | null;
-    onEdit?: (item: Movie) => void;
     onDelete?: (itemId: string) => void;
     readonly?: boolean;
 }
@@ -29,7 +28,6 @@ export default function MovieItem({
     drag,
     isActive,
     medalEmoji,
-    onEdit,
     onDelete,
     readonly = false,
 }: MovieItemProps) {
@@ -112,14 +110,6 @@ export default function MovieItem({
                         </View>
 
                         <View style={styles.actions}>
-                            {onEdit && (
-                                <TouchableOpacity
-                                    style={styles.actionButton}
-                                    onPress={() => onEdit(item)}
-                                >
-                                    <Edit2 color={theme.colors.text.secondary} size={16} />
-                                </TouchableOpacity>
-                            )}
                             {onDelete && (
                                 <TouchableOpacity
                                     style={[styles.actionButton, styles.deleteButton]}

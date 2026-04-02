@@ -96,7 +96,6 @@ export default function ListDetailScreen() {
         drag={drag}
         isActive={isActive}
         medalEmoji={medal}
-        onEdit={isCurrentlyReadOnly ? undefined : openEditModal}
         onDelete={isCurrentlyReadOnly ? undefined : handleDeleteMovie}
         readonly={isCurrentlyReadOnly}
       />
@@ -225,21 +224,6 @@ export default function ListDetailScreen() {
         onChangeNotes={setNotes}
         onSubmit={handleCreateMovie}
         onCancel={closeModals}
-      />
-
-      {/* Edit Movie Modal */}
-      <MovieFormModal
-        visible={isEditing}
-        title="Edit Movie"
-        value={movieTitle}
-        notes={notes}
-        imageUrl={imageUrl}
-        error={formError}
-        onChangeTitle={setMovieTitle}
-        onChangeNotes={setNotes}
-        onSubmit={handleUpdateMovie}
-        onCancel={closeModals}
-        isEditing
       />
 
       {/* Search Movie Modal */}
