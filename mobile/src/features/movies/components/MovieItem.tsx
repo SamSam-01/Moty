@@ -16,6 +16,7 @@ interface MovieItemProps {
     drag: () => void;
     isActive: boolean;
     medalEmoji?: string | null;
+    onPress?: (item: Movie) => void;
     onDelete?: (itemId: string) => void;
     readonly?: boolean;
 }
@@ -28,6 +29,7 @@ export default function MovieItem({
     drag,
     isActive,
     medalEmoji,
+    onPress,
     onDelete,
     readonly = false,
 }: MovieItemProps) {
@@ -44,8 +46,9 @@ export default function MovieItem({
     return (
         <ScaleDecorator>
             <TouchableOpacity
+                onPress={onPress ? () => onPress(item) : undefined}
                 onLongPress={readonly ? undefined : drag}
-                activeOpacity={readonly ? 1 : 1}
+                activeOpacity={readonly ? 0.8 : 1}
                 delayLongPress={200}
                 style={[
                     styles.containerWrapper,
