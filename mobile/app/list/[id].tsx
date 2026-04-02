@@ -96,6 +96,7 @@ export default function ListDetailScreen() {
         drag={drag}
         isActive={isActive}
         medalEmoji={medal}
+        onPress={isCurrentlyReadOnly ? (m) => router.push(`/movie/${m.tmdbId}?localId=${m.id}&listId=${id}`) : undefined}
         onDelete={isCurrentlyReadOnly ? undefined : handleDeleteMovie}
         readonly={isCurrentlyReadOnly}
       />
@@ -168,7 +169,15 @@ export default function ListDetailScreen() {
             renderItem={renderItem}
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
-            ListHeaderComponent={showPodium && podiumEntries.length > 0 ? <Podium entries={podiumEntries} /> : null}
+            ListHeaderComponent={showPodium && podiumEntries.length > 0 ? (
+                <Podium 
+                  entries={podiumEntries} 
+                  onPressSlot={(rank) => {
+                      const entry = podiumEntries.find(e => e.rank === rank);
+                      if (entry) router.push(`/movie/${entry.tmdb_id}?localId=${entry.id}&listId=${id}`);
+                  }}
+                />
+            ) : null}
           />
         )}
 
