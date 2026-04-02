@@ -9,7 +9,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Plus, Search } from 'lucide-react-native';
+import { ArrowLeft, Plus, Search, Settings, Check } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMovieItems, MovieItem, MovieFormModal, MovieSearch } from '../../src/features/movies';
 import { theme } from '../../src/theme';
@@ -32,11 +32,16 @@ const getMedalEmoji = (rank: number): string | null => {
 
 export default function ListDetailScreen() {
   const { id, title, readonly, isPinned: paramIsPinned } = useLocalSearchParams<{ id: string; title: string, readonly?: string, isPinned?: string }>();
-  const isReadOnly = readonly === 'true';
+  
+  const [isEditMode, setIsEditMode] = useState(false);
+  const isStrictlyReadOnly = readonly === 'true';
+  const isCurrentlyReadOnly = isStrictlyReadOnly || !isEditMode;
+  const canEdit = !isStrictlyReadOnly;
+
   const { lists } = useAppContext();
   const currentList = lists.find(list => list.id === id);
   const isPinnedList = paramIsPinned === 'true' || currentList?.isPinned;
-  const showPodium = isReadOnly && isPinnedList;
+  const showPodium = isCurrentlyReadOnly && isPinnedList;
 
   const {
     movies,
@@ -74,12 +79,12 @@ export default function ListDetailScreen() {
         drag={drag}
         isActive={isActive}
         medalEmoji={medal}
-        onEdit={isReadOnly ? undefined : openEditModal}
-        onDelete={isReadOnly ? undefined : handleDeleteMovie}
-        readonly={isReadOnly}
+        onEdit={isCurrentlyReadOnly ? undefined : openEditModal}
+        onDelete={isCurrentlyReadOnly ? undefined : handleDeleteMovie}
+        readonly={isCurrentlyReadOnly}
       />
     );
-  }, [openEditModal, handleDeleteMovie, isReadOnly]);
+  }, [openEditModal, handleDeleteMovie, isCurrentlyReadOnly]);
 
   const displayMovies = showPodium ? movies.slice(3) : movies;
   const podiumEntries: PodiumEntry[] = (showPodium ? movies.slice(0, 3) : []).map((m, i) => ({
@@ -145,8 +150,32 @@ export default function ListDetailScreen() {
           />
         )}
 
-        {!isReadOnly && (
+        {canEdit && !isEditMode && (
           <View style={styles.fabContainer}>
+            <TouchableOpacity
+              style={styles.fabWrapper}
+              onPress={() => setIsEditMode(true)}
+              activeOpacity={0.8}
+            >
+              <GlassView intensity={40} style={[styles.fab, styles.searchFab]}>
+                <Settings color={theme.colors.white} size={24} />
+              </GlassView>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {canEdit && isEditMode && (
+          <View style={styles.fabContainer}>
+            <TouchableOpacity
+              style={styles.fabWrapper}
+              onPress={() => setIsEditMode(false)}
+              activeOpacity={0.8}
+            >
+              <GlassView intensity={40} style={[styles.fab, styles.checkFab]}>
+                <Check color={theme.colors.white} size={24} />
+              </GlassView>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={styles.fabWrapper}
               onPress={openSearchModal}
@@ -308,6 +337,11 @@ const styles = StyleSheet.create({
   searchFab: {
     backgroundColor: 'rgba(6, 182, 212, 0.2)', // Cyan with opacity
     borderColor: theme.colors.accent,
+    borderWidth: 1,
+  },
+  checkFab: {
+    backgroundColor: 'rgba(16, 185, 129, 0.2)', // Emerald green with opacity
+    borderColor: '#10b981',
     borderWidth: 1,
   },
   fabGradient: {
