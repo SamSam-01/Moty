@@ -166,7 +166,7 @@ export default function PublicProfileView({
                                     index={index}
                                     onPress={() => router.push({
                                         pathname: '/list/[id]',
-                                        params: { id: list.id, title: list.title, readonly: 'true' }
+                                        params: { id: list.id, title: list.title, readonly: 'true', isPinned: list.isPinned ? 'true' : 'false' }
                                     })}
                                     onEdit={() => { }}
                                     onDelete={() => { }}

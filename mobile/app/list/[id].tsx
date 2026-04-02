@@ -19,7 +19,8 @@ import Typography from '../../src/components/ui/Typography';
 import DraggableFlatList, {
   RenderItemParams,
 } from 'react-native-draggable-flatlist';
-import { Movie } from '../../src/types';
+import { Movie, PodiumEntry } from '../../src/types';
+import Podium from '../../src/features/podium/components/Podium';
 
 // Pure function to get medal emoji based on rank
 const getMedalEmoji = (rank: number): string | null => {
@@ -30,10 +31,12 @@ const getMedalEmoji = (rank: number): string | null => {
 };
 
 export default function ListDetailScreen() {
-  const { id, title, readonly } = useLocalSearchParams<{ id: string; title: string, readonly?: string }>();
+  const { id, title, readonly, isPinned: paramIsPinned } = useLocalSearchParams<{ id: string; title: string, readonly?: string, isPinned?: string }>();
   const isReadOnly = readonly === 'true';
   const { lists } = useAppContext();
   const currentList = lists.find(list => list.id === id);
+  const isPinnedList = paramIsPinned === 'true' || currentList?.isPinned;
+  const showPodium = isReadOnly && isPinnedList;
 
   const {
     movies,
@@ -78,6 +81,16 @@ export default function ListDetailScreen() {
     );
   }, [openEditModal, handleDeleteMovie, isReadOnly]);
 
+  const displayMovies = showPodium ? movies.slice(3) : movies;
+  const podiumEntries: PodiumEntry[] = (showPodium ? movies.slice(0, 3) : []).map((m, i) => ({
+    id: m.id,
+    user_id: '',
+    tmdb_id: m.tmdbId || '',
+    movie_data: m,
+    rank: (m.rank || i + 1) as 1 | 2 | 3,
+    created_at: new Date().toISOString()
+  }));
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" />
@@ -120,7 +133,7 @@ export default function ListDetailScreen() {
           </View>
         ) : (
           <DraggableFlatList
-            data={movies}
+            data={displayMovies}
             onDragEnd={({ data, from, to }) => {
               handleReorderMovies(from, to, data);
             }}
@@ -128,6 +141,7 @@ export default function ListDetailScreen() {
             renderItem={renderItem}
             contentContainerStyle={styles.listContainer}
             showsVerticalScrollIndicator={false}
+            ListHeaderComponent={showPodium && podiumEntries.length > 0 ? <Podium entries={podiumEntries} /> : null}
           />
         )}
 
