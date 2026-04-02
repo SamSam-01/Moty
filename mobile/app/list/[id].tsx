@@ -131,7 +131,7 @@ export default function ListDetailScreen() {
             <ArrowLeft color={theme.colors.text.primary} size={24} />
           </TouchableOpacity>
           <Typography variant="h3" style={styles.headerTitle} numberOfLines={1}>
-            {Array.isArray(title) ? title[0] : (title || 'List Details')}
+            {Array.isArray(title) ? title[0] : (title || 'Détails de la liste')}
           </Typography>
           <View style={styles.headerRight}>
             {canEdit && isEditMode && currentList && (
@@ -152,10 +152,10 @@ export default function ListDetailScreen() {
           <View style={styles.centerContainer}>
             <GlassView intensity={20} style={styles.emptyState}>
               <Typography variant="h3" style={styles.emptyStateText}>
-                No movies yet
+                Aucun film pour le moment
               </Typography>
               <Typography variant="body" style={styles.emptyStateSubtext}>
-                Tap the + button to start ranking!
+                Cliquez sur la loupe pour rechercher un film !
               </Typography>
             </GlassView>
           </View>
@@ -224,7 +224,7 @@ export default function ListDetailScreen() {
       {/* Create New Movie Modal */}
       <MovieFormModal
         visible={isCreating}
-        title="Add New Movie"
+        title="Ajouter un film"
         value={movieTitle}
         notes={notes}
         imageUrl={imageUrl}
@@ -254,7 +254,7 @@ export default function ListDetailScreen() {
       {/* Edit List Settings Modal */}
       <ListFormModal
         visible={isListFormEditing}
-        title="Edit List"
+        title="Modifier la liste"
         value={listFormTitle}
         error={listFormError}
         onChangeText={setListFormTitle}

@@ -26,7 +26,6 @@ interface ListFormModalProps {
     color?: string;
     setColor: (color: string | undefined) => void;
     filters?: MovieFilters;
-    filters?: MovieFilters;
     setFilters: (filters: MovieFilters | undefined) => void;
     isPinned?: boolean;
     setIsPinned?: (isPinned: boolean) => void;
@@ -84,18 +83,18 @@ export default function ListFormModal({
         >
             <ScrollView style={styles.formContainer} showsVerticalScrollIndicator={false}>
                 <Input
-                    label="List Title"
+                    label="Titre de la liste"
                     value={value}
                     onChangeText={onChangeText}
-                    placeholder="e.g., Top 2024 Movies"
+                    placeholder="ex: Top Films 2024"
                     error={error || undefined}
                 />
 
                 {setIsPinned && (
                     <View style={styles.switchContainer}>
                         <View>
-                            <Typography variant="body" style={styles.switchLabel}>Pin to Profile</Typography>
-                            <Typography variant="caption" style={styles.switchSubLabel}>Show this list publicly on your profile</Typography>
+                            <Typography variant="body" style={styles.switchLabel}>Épingler au profil</Typography>
+                            <Typography variant="caption" style={styles.switchSubLabel}>Afficher publiquement cette liste sur le profil</Typography>
                         </View>
                         <Switch
                             value={isPinned}
@@ -107,7 +106,7 @@ export default function ListFormModal({
                 )}
 
                 <View style={styles.section}>
-                    <Typography variant="h3" style={styles.sectionTitle}>Color Theme</Typography>
+                    <Typography variant="h3" style={styles.sectionTitle}>Thème de couleur</Typography>
                     <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.colorScroll}>
                         <View style={styles.colorContainer}>
                             <TouchableOpacity
@@ -138,13 +137,13 @@ export default function ListFormModal({
                 </View>
 
                 <View style={styles.section}>
-                    <Typography variant="h3" style={styles.sectionTitle}>Impose Search Filters</Typography>
+                    <Typography variant="h3" style={styles.sectionTitle}>Filtres de recherche imposés</Typography>
                     <Typography variant="caption" style={styles.sectionSubtitle}>
-                        Movies added to this list will be filtered by these rules.
+                        Les films ajoutés à cette liste seront filtrés par ces règles.
                     </Typography>
 
                     <Input
-                        label="Release Year"
+                        label="Année de sortie"
                         value={filters?.year?.toString() || ''}
                         onChangeText={(text) => {
                             const year = parseInt(text);
@@ -153,7 +152,7 @@ export default function ListFormModal({
                                 year: isNaN(year) ? undefined : year
                             });
                         }}
-                        placeholder="e.g. 2025"
+                        placeholder="ex. 2025"
                         keyboardType="numeric"
                     />
 
@@ -188,7 +187,7 @@ export default function ListFormModal({
             </ScrollView>
 
             <Button
-                title={isEditing ? 'Update List' : 'Create List'}
+                title={isEditing ? 'Mettre à jour' : 'Créer la liste'}
                 onPress={onSubmit}
                 style={styles.submitButton}
                 variant="primary"
@@ -211,6 +210,23 @@ const styles = StyleSheet.create({
     sectionSubtitle: {
         color: theme.colors.text.secondary,
         marginBottom: theme.spacing.s,
+    },
+    switchContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginTop: theme.spacing.m,
+        backgroundColor: 'rgba(255,255,255,0.05)',
+        padding: theme.spacing.m,
+        borderRadius: theme.borderRadius.m,
+    },
+    switchLabel: {
+        color: theme.colors.text.primary,
+        fontWeight: '600',
+    },
+    switchSubLabel: {
+        color: theme.colors.text.tertiary,
+        marginTop: 2,
     },
     colorScroll: {
         marginHorizontal: -theme.spacing.m,

@@ -100,7 +100,7 @@ export default function MovieDetailScreen() {
                 style={StyleSheet.absoluteFill}
             />
 
-            <ScrollView bounces={false} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
                 {/* Header Banner */}
                 <View style={styles.bannerContainer}>
                     {backdropUri ? (

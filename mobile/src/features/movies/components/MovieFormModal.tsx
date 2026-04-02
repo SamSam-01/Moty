@@ -55,21 +55,21 @@ export default function MovieFormModal({
                 )}
 
                 <Input
-                    label="Movie Title"
+                    label="Titre du film"
                     value={value}
                     onChangeText={onChangeTitle}
-                    placeholder="Enter movie title"
+                    placeholder="Entrez le titre du film"
                 />
 
                 <View style={styles.formGroup}>
                     <Typography variant="caption" color={theme.colors.text.secondary} style={styles.label}>
-                        Notes (Optional)
+                        Notes (Optionnel)
                     </Typography>
                     <TextInput
                         style={[styles.input, styles.textArea]}
                         value={notes}
                         onChangeText={onChangeNotes}
-                        placeholder="Why do you like this movie?"
+                        placeholder="Pourquoi aimez-vous ce film ?"
                         placeholderTextColor={theme.colors.text.tertiary}
                         selectionColor={theme.colors.primary}
                         multiline
@@ -84,7 +84,7 @@ export default function MovieFormModal({
                 )}
 
                 <Button
-                    title={isEditing ? 'Update Movie' : 'Add Movie'}
+                    title={isEditing ? 'Mettre à jour' : 'Ajouter un film'}
                     onPress={onSubmit}
                     style={styles.submitButton}
                 />
