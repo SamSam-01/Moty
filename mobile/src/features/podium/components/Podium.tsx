@@ -22,7 +22,7 @@ export default function Podium({ entries, editable, onPressSlot }: PodiumProps) 
                         rank={2}
                         entry={getEntry(2)}
                         editable={editable}
-                        onPress={() => onPressSlot?.(2)}
+                        onPress={onPressSlot ? () => onPressSlot(2) : undefined}
                     />
                 </View>
 
@@ -32,7 +32,7 @@ export default function Podium({ entries, editable, onPressSlot }: PodiumProps) 
                         rank={1}
                         entry={getEntry(1)}
                         editable={editable}
-                        onPress={() => onPressSlot?.(1)}
+                        onPress={onPressSlot ? () => onPressSlot(1) : undefined}
                     />
                 </View>
 
@@ -42,7 +42,7 @@ export default function Podium({ entries, editable, onPressSlot }: PodiumProps) 
                         rank={3}
                         entry={getEntry(3)}
                         editable={editable}
-                        onPress={() => onPressSlot?.(3)}
+                        onPress={onPressSlot ? () => onPressSlot(3) : undefined}
                     />
                 </View>
             </View>

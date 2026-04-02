@@ -78,7 +78,6 @@ export default function ProfileScreen() {
                     onFollowersPress={() => router.push(`/user/${session?.user?.id}/network?type=followers`)}
                     onFollowingPress={() => router.push(`/user/${session?.user?.id}/network?type=following`)}
                     podium={podium}
-                    onPodiumPress={(rank) => router.push(`/movie-search?rank=${rank}`)}
                 />
 
 
