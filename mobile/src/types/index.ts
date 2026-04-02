@@ -28,6 +28,7 @@ export interface UserProfile {
   id: string;
   username: string;
   is_public?: boolean;
+  region?: string;
   updated_at?: string;
 }
 

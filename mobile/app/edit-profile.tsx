@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, ScrollView, Switch, Alert, Modal, FlatList } from 'react-native';
 import { router } from 'expo-router';
-import { ArrowLeft, Mail, Calendar, Key, LogOut, Lock, Globe } from 'lucide-react-native';
+import { ArrowLeft, Mail, Calendar, Key, LogOut, Lock, Globe, ChevronRight, X } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useAppContext } from '../src/context/AppContext';
 import GlassView from '../src/components/ui/GlassView';
@@ -10,18 +10,34 @@ import { theme } from '../src/theme';
 import Button from '../src/components/ui/Button';
 import Input from '../src/components/ui/Input';
 
+const TMDB_REGIONS = [
+    { code: '', name: 'Global (Default)' },
+    { code: 'FR', name: 'France' },
+    { code: 'US', name: 'United States' },
+    { code: 'GB', name: 'United Kingdom' },
+    { code: 'CA', name: 'Canada' },
+    { code: 'JP', name: 'Japan' },
+    { code: 'KR', name: 'South Korea' },
+    { code: 'ES', name: 'Spain' },
+    { code: 'IT', name: 'Italy' },
+    { code: 'DE', name: 'Germany' },
+];
+
 export default function EditProfileScreen() {
     const { session, signOut, profile, updateProfile } = useAppContext();
     const user = session?.user;
 
     const [username, setUsername] = useState(profile?.username || '');
     const [isPublic, setIsPublic] = useState(profile?.is_public ?? true);
+    const [region, setRegion] = useState(profile?.region || '');
     const [isLoading, setIsLoading] = useState(false);
+    const [showRegionModal, setShowRegionModal] = useState(false);
 
     useEffect(() => {
         if (profile) {
             setUsername(profile.username);
             setIsPublic(profile.is_public ?? true);
+            setRegion(profile.region || '');
         }
     }, [profile]);
 
@@ -34,8 +50,9 @@ export default function EditProfileScreen() {
         setIsLoading(true);
         try {
             await updateProfile({
-                username,
-                is_public: isPublic
+                username: username.trim(),
+                is_public: isPublic,
+                region: region.trim().toUpperCase()
             });
             Alert.alert('Success', 'Profile updated successfully', [
                 { text: 'OK', onPress: () => router.back() }
@@ -103,9 +120,28 @@ export default function EditProfileScreen() {
                             />
                         </View>
 
+                        <TouchableOpacity 
+                            style={styles.regionSelector}
+                            onPress={() => setShowRegionModal(true)}
+                            activeOpacity={0.7}
+                        >
+                            <View style={styles.regionInfo}>
+                                <Globe color={theme.colors.text.secondary} size={18} />
+                                <View style={{ marginLeft: 12 }}>
+                                    <Typography variant="body" style={styles.value}>
+                                        TMDB Region
+                                    </Typography>
+                                    <Typography variant="caption" style={styles.regionCodeActive}>
+                                        {TMDB_REGIONS.find(r => r.code === region)?.name || 'Global (Default)'}
+                                    </Typography>
+                                </View>
+                            </View>
+                            <ChevronRight color={theme.colors.text.tertiary} size={20} />
+                        </TouchableOpacity>
+
                         <View style={styles.row}>
                             <View style={{ flex: 1 }}>
-                                <Typography variant="h4" style={styles.rowTitle}>Profile Privacy</Typography>
+                                <Typography variant="h3" style={styles.rowTitle}>Profile Privacy</Typography>
                                 <Typography variant="caption" style={styles.rowSubtitle}>
                                     {isPublic ? 'Everyone can see your pinned lists' : 'Only you can see your profile'}
                                 </Typography>
@@ -170,6 +206,53 @@ export default function EditProfileScreen() {
                     textStyle={{ color: theme.colors.error }}
                 />
             </ScrollView>
+
+            <Modal
+                visible={showRegionModal}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setShowRegionModal(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Typography variant="h3">Select Region</Typography>
+                            <TouchableOpacity onPress={() => setShowRegionModal(false)}>
+                                <X color={theme.colors.text.primary} size={24} />
+                            </TouchableOpacity>
+                        </View>
+                        <FlatList
+                            data={TMDB_REGIONS}
+                            keyExtractor={(item) => item.code}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={[
+                                        styles.regionOption,
+                                        region === item.code && styles.regionOptionSelected
+                                    ]}
+                                    onPress={() => {
+                                        setRegion(item.code);
+                                        setShowRegionModal(false);
+                                    }}
+                                >
+                                    <Typography style={[
+                                        styles.regionOptionText,
+                                        region === item.code && styles.regionOptionTextSelected
+                                    ]}>
+                                        {item.name}
+                                    </Typography>
+                                    {region === item.code && (
+                                        <Typography style={styles.regionOptionCodeSelected}>
+                                            {item.code ? item.code : 'GL'}
+                                        </Typography>
+                                    )}
+                                </TouchableOpacity>
+                            )}
+                            showsVerticalScrollIndicator={false}
+                        />
+                    </View>
+                </View>
+            </Modal>
         </View>
     );
 }
@@ -261,5 +344,70 @@ const styles = StyleSheet.create({
     },
     signOutButton: {
         borderColor: theme.colors.error,
+    },
+    regionSelector: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        backgroundColor: 'rgba(255,255,255,0.03)',
+        padding: theme.spacing.m,
+        borderRadius: theme.borderRadius.m,
+        borderWidth: 1,
+        borderColor: 'rgba(255,255,255,0.05)',
+        marginBottom: theme.spacing.m,
+    },
+    regionInfo: {
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    regionCodeActive: {
+        color: theme.colors.primary,
+        fontSize: 12,
+        marginTop: 2,
+    },
+    modalOverlay: {
+        flex: 1,
+        justifyContent: 'flex-end',
+        backgroundColor: 'rgba(0,0,0,0.7)',
+    },
+    modalContent: {
+        backgroundColor: theme.colors.surface,
+        borderTopLeftRadius: theme.borderRadius.xl,
+        borderTopRightRadius: theme.borderRadius.xl,
+        padding: theme.spacing.l,
+        maxHeight: '80%',
+    },
+    modalHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: theme.spacing.l,
+    },
+    regionOption: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        paddingVertical: theme.spacing.m,
+        paddingHorizontal: theme.spacing.s,
+        borderBottomWidth: 1,
+        borderBottomColor: 'rgba(255,255,255,0.05)',
+    },
+    regionOptionSelected: {
+        backgroundColor: 'rgba(99, 102, 241, 0.1)',
+        borderRadius: theme.borderRadius.m,
+        borderBottomWidth: 0,
+    },
+    regionOptionText: {
+        color: theme.colors.text.secondary,
+        fontSize: 16,
+    },
+    regionOptionTextSelected: {
+        color: theme.colors.primary,
+        fontWeight: '600',
+    },
+    regionOptionCodeSelected: {
+        color: theme.colors.primary,
+        fontSize: 12,
+        fontWeight: 'bold',
     },
 });

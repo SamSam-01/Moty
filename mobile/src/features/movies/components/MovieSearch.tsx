@@ -20,6 +20,7 @@ import Typography from '../../../components/ui/Typography';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import SearchFilters from './SearchFilters';
+import { useAppContext } from '../../../context/AppContext';
 
 interface MovieSearchProps {
 
@@ -37,6 +38,10 @@ export default function MovieSearch({ onSelectMovie, onClose, imposedFilters }: 
 
     const [error, setError] = useState<string | null>(null);
     const [filters, setFilters] = useState<MovieFilters>(imposedFilters || {});
+    
+    // Extrait la region depuis le contexte profil utilisateur
+    const { profile } = useAppContext();
+    const userRegion = profile?.region || 'FR';
 
     // Ensure filters update if imposedFilters changes
     useEffect(() => {
@@ -62,10 +67,10 @@ export default function MovieSearch({ onSelectMovie, onClose, imposedFilters }: 
         try {
             // If we have filters, discover movies instead of generic trending
             if (Object.keys(filters).length > 0) {
-                const discovered = await movieApi.discoverMovies(filters);
+                const discovered = await movieApi.discoverMovies(filters, userRegion);
                 setTrendingMovies(discovered);
             } else {
-                const trending = await movieApi.getTrendingMovies();
+                const trending = await movieApi.getTrendingMovies(userRegion);
                 setTrendingMovies(trending);
             }
         } catch (err) {
@@ -93,7 +98,7 @@ export default function MovieSearch({ onSelectMovie, onClose, imposedFilters }: 
             setError(null);
 
             try {
-                const movies = await movieApi.searchMovies(query, { ...filters, sortBy });
+                const movies = await movieApi.searchMovies(query, { ...filters, sortBy }, userRegion);
                 setResults(movies);
             } catch (err) {
                 setError('Unable to search for movies');

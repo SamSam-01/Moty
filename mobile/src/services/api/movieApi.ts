@@ -36,9 +36,35 @@ export interface MovieFilters {
  */
 export const movieApi = {
   /**
+   * Helper to fetch and override regional release dates for a batch of movies
+   */
+  async patchRegionalReleaseDates(movies: any[], region: string): Promise<any[]> {
+    if (!region) return movies;
+
+    return await Promise.all(movies.map(async (movie) => {
+      try {
+        const datesRes = await axios.get(`${TMDB_API_URL}/movie/${movie.id}/release_dates`, {
+          params: { api_key: TMDB_API_KEY }
+        });
+        const regionDates = datesRes.data.results?.find((r: any) => r.iso_3166_1 === region);
+        if (regionDates && regionDates.release_dates?.length > 0) {
+          const theatrical = regionDates.release_dates.find((d: any) => d.type === 3 || d.type === 2);
+          const bestRelease = theatrical || regionDates.release_dates[0];
+          if (bestRelease?.release_date) {
+            movie.release_date = bestRelease.release_date.split('T')[0];
+          }
+        }
+      } catch (err) {
+        console.warn(`Could not fetch regional date for movie ${movie.id}`);
+      }
+      return movie;
+    }));
+  },
+
+  /**
    * Recherche de films par mot-clé
    */
-  async searchMovies(query: string, filters?: MovieFilters): Promise<TMDBMovie[]> {
+  async searchMovies(query: string, filters?: MovieFilters, region?: string): Promise<TMDBMovie[]> {
     try {
       const params: any = {
         api_key: TMDB_API_KEY,
@@ -49,10 +75,17 @@ export const movieApi = {
 
       // Appliquer les filtres si fournis
       if (filters?.year) {
-        params.primary_release_year = filters.year;
+        if (region) {
+          params.year = filters.year; // Look up anywhere in that year
+        } else {
+          params.primary_release_year = filters.year;
+        }
       }
       if (filters?.minRating) {
         params['vote_average.gte'] = filters.minRating;
+      }
+      if (region) {
+        params.region = region;
       }
 
       const response = await axios.get(`${TMDB_API_URL}/search/movie`, {
@@ -71,6 +104,10 @@ export const movieApi = {
       // Tri des résultats
       if (filters?.sortBy) {
         results = this.sortMovies(results, filters.sortBy);
+      }
+
+      if (region) {
+        results = await this.patchRegionalReleaseDates(results, region);
       }
 
       return results.map((movie: any) => ({
@@ -92,7 +129,7 @@ export const movieApi = {
   /**
    * Découvrir des films avec filtres avancés
    */
-  async discoverMovies(filters?: MovieFilters): Promise<TMDBMovie[]> {
+  async discoverMovies(filters?: MovieFilters, region?: string): Promise<TMDBMovie[]> {
     try {
       const params: any = {
         api_key: TMDB_API_KEY,
@@ -102,7 +139,12 @@ export const movieApi = {
       };
 
       if (filters?.year) {
-        params.primary_release_year = filters.year;
+        if (region) {
+          params['primary_release_date.gte'] = `${filters.year}-01-01`;
+          params['primary_release_date.lte'] = `${filters.year}-12-31`;
+        } else {
+          params.primary_release_year = filters.year;
+        }
       }
       if (filters?.minRating) {
         params['vote_average.gte'] = filters.minRating;
@@ -110,12 +152,20 @@ export const movieApi = {
       if (filters?.genres && filters.genres.length > 0) {
         params.with_genres = filters.genres.join(',');
       }
+      if (region) {
+        params.region = region;
+      }
 
       const response = await axios.get(`${TMDB_API_URL}/discover/movie`, {
         params,
       });
 
-      return response.data.results.map((movie: any) => ({
+      let results = response.data.results;
+      if (region) {
+        results = await this.patchRegionalReleaseDates(results, region);
+      }
+
+      return results.map((movie: any) => ({
         id: movie.id,
         title: movie.title,
         overview: movie.overview,
@@ -134,16 +184,26 @@ export const movieApi = {
   /**
    * Films trending du moment
    */
-  async getTrendingMovies(): Promise<TMDBMovie[]> {
+  async getTrendingMovies(region?: string): Promise<TMDBMovie[]> {
     try {
+      const params: any = {
+        api_key: TMDB_API_KEY,
+        language: LANGUAGE,
+      };
+      if (region) {
+        params.region = region;
+      }
+
       const response = await axios.get(`${TMDB_API_URL}/trending/movie/week`, {
-        params: {
-          api_key: TMDB_API_KEY,
-          language: LANGUAGE,
-        },
+        params,
       });
 
-      return response.data.results.slice(0, 10).map((movie: any) => ({
+      let results = response.data.results.slice(0, 10);
+      if (region) {
+        results = await this.patchRegionalReleaseDates(results, region);
+      }
+
+      return results.map((movie: any) => ({
         id: movie.id,
         title: movie.title,
         overview: movie.overview,
