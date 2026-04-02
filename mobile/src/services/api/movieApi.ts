@@ -49,7 +49,11 @@ export const movieApi = {
 
       // Appliquer les filtres si fournis
       if (filters?.year) {
-        params.primary_release_year = filters.year;
+        if (region) {
+          params.year = filters.year; // Look up anywhere in that year
+        } else {
+          params.primary_release_year = filters.year;
+        }
       }
       if (filters?.minRating) {
         params['vote_average.gte'] = filters.minRating;
@@ -105,7 +109,12 @@ export const movieApi = {
       };
 
       if (filters?.year) {
-        params.primary_release_year = filters.year;
+        if (region) {
+          params['primary_release_date.gte'] = `${filters.year}-01-01`;
+          params['primary_release_date.lte'] = `${filters.year}-12-31`;
+        } else {
+          params.primary_release_year = filters.year;
+        }
       }
       if (filters?.minRating) {
         params['vote_average.gte'] = filters.minRating;
