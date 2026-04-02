@@ -100,7 +100,7 @@ export default function MovieDetailScreen() {
                 style={StyleSheet.absoluteFill}
             />
 
-            <ScrollView bounces={false} showsVerticalScrollIndicator={false}>
+            <ScrollView bounces={false} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
                 {/* Header Banner */}
                 <View style={styles.bannerContainer}>
                     {backdropUri ? (
@@ -151,9 +151,9 @@ export default function MovieDetailScreen() {
                 <View style={styles.content}>
                     
                     {/* Personal Notes (if loaded via local DB) */}
-                    {personalNotes && (
+                    {personalNotes && personalNotes !== movie.overview && (
                         <GlassView intensity={15} style={styles.notesContainer}>
-                            <Typography variant="h3" style={styles.sectionTitle}>Notes personelles</Typography>
+                            <Typography variant="h3" style={styles.sectionTitle}>Notes personnelles</Typography>
                             <Typography style={styles.notesText}>{personalNotes}</Typography>
                         </GlassView>
                     )}
