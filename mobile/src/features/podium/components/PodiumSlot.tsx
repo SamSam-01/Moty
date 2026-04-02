@@ -29,7 +29,7 @@ const COLORS = {
     1: ['#FFD700', '#FFA500'], // Gold
     2: ['#C0C0C0', '#A9A9A9'], // Silver
     3: ['#CD7F32', '#8B4513'], // Bronze
-};
+} as const;
 
 export default function PodiumSlot({ rank, entry, editable, onPress }: PodiumSlotProps) {
     // Standard Poster Ratio 2:3
@@ -83,7 +83,7 @@ export default function PodiumSlot({ rank, entry, editable, onPress }: PodiumSlo
     return (
         <TouchableOpacity
             onPress={onPress}
-            disabled={!editable && !entry}
+            disabled={!onPress}
             style={[
                 styles.container,
                 { width }
