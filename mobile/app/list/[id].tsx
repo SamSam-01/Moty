@@ -42,7 +42,7 @@ export default function ListDetailScreen() {
   const { lists } = useAppContext();
   const currentList = lists.find(list => list.id === id);
   const isPinnedList = paramIsPinned === 'true' || currentList?.isPinned;
-  const showPodium = isCurrentlyReadOnly && isPinnedList;
+  const showPodium = isCurrentlyReadOnly;
 
   const {
     isEditing: isListFormEditing,
