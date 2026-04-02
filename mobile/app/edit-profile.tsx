@@ -16,12 +16,14 @@ export default function EditProfileScreen() {
 
     const [username, setUsername] = useState(profile?.username || '');
     const [isPublic, setIsPublic] = useState(profile?.is_public ?? true);
+    const [region, setRegion] = useState(profile?.region || 'FR');
     const [isLoading, setIsLoading] = useState(false);
 
     useEffect(() => {
         if (profile) {
             setUsername(profile.username);
             setIsPublic(profile.is_public ?? true);
+            setRegion(profile.region || 'FR');
         }
     }, [profile]);
 
@@ -34,8 +36,9 @@ export default function EditProfileScreen() {
         setIsLoading(true);
         try {
             await updateProfile({
-                username,
-                is_public: isPublic
+                username: username.trim(),
+                is_public: isPublic,
+                region: region.trim().toUpperCase()
             });
             Alert.alert('Success', 'Profile updated successfully', [
                 { text: 'OK', onPress: () => router.back() }
@@ -103,9 +106,23 @@ export default function EditProfileScreen() {
                             />
                         </View>
 
+                        <View style={styles.inputGroup}>
+                            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                                <Globe color={theme.colors.text.secondary} size={14} />
+                                <Typography variant="caption" style={styles.label}>TMDB Region Code</Typography>
+                            </View>
+                            <Input
+                                value={region}
+                                onChangeText={(text) => setRegion(text.toUpperCase())}
+                                placeholder="e.g. FR, US, GB"
+                                autoCapitalize="characters"
+                                maxLength={2}
+                            />
+                        </View>
+
                         <View style={styles.row}>
                             <View style={{ flex: 1 }}>
-                                <Typography variant="h4" style={styles.rowTitle}>Profile Privacy</Typography>
+                                <Typography variant="h3" style={styles.rowTitle}>Profile Privacy</Typography>
                                 <Typography variant="caption" style={styles.rowSubtitle}>
                                     {isPublic ? 'Everyone can see your pinned lists' : 'Only you can see your profile'}
                                 </Typography>

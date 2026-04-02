@@ -38,7 +38,7 @@ export const movieApi = {
   /**
    * Recherche de films par mot-clé
    */
-  async searchMovies(query: string, filters?: MovieFilters): Promise<TMDBMovie[]> {
+  async searchMovies(query: string, filters?: MovieFilters, region?: string): Promise<TMDBMovie[]> {
     try {
       const params: any = {
         api_key: TMDB_API_KEY,
@@ -53,6 +53,9 @@ export const movieApi = {
       }
       if (filters?.minRating) {
         params['vote_average.gte'] = filters.minRating;
+      }
+      if (region) {
+        params.region = region;
       }
 
       const response = await axios.get(`${TMDB_API_URL}/search/movie`, {
@@ -92,7 +95,7 @@ export const movieApi = {
   /**
    * Découvrir des films avec filtres avancés
    */
-  async discoverMovies(filters?: MovieFilters): Promise<TMDBMovie[]> {
+  async discoverMovies(filters?: MovieFilters, region?: string): Promise<TMDBMovie[]> {
     try {
       const params: any = {
         api_key: TMDB_API_KEY,
@@ -109,6 +112,9 @@ export const movieApi = {
       }
       if (filters?.genres && filters.genres.length > 0) {
         params.with_genres = filters.genres.join(',');
+      }
+      if (region) {
+        params.region = region;
       }
 
       const response = await axios.get(`${TMDB_API_URL}/discover/movie`, {
@@ -134,13 +140,18 @@ export const movieApi = {
   /**
    * Films trending du moment
    */
-  async getTrendingMovies(): Promise<TMDBMovie[]> {
+  async getTrendingMovies(region?: string): Promise<TMDBMovie[]> {
     try {
+      const params: any = {
+        api_key: TMDB_API_KEY,
+        language: LANGUAGE,
+      };
+      if (region) {
+        params.region = region;
+      }
+
       const response = await axios.get(`${TMDB_API_URL}/trending/movie/week`, {
-        params: {
-          api_key: TMDB_API_KEY,
-          language: LANGUAGE,
-        },
+        params,
       });
 
       return response.data.results.slice(0, 10).map((movie: any) => ({
