@@ -9,9 +9,10 @@ import {
   StatusBar,
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { ArrowLeft, Plus, Search, Settings, Check } from 'lucide-react-native';
+import { ArrowLeft, Plus, Search, Settings, Check, Pencil } from 'lucide-react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useMovieItems, MovieItem, MovieFormModal, MovieSearch } from '../../src/features/movies';
+import { useMovieLists, ListFormModal } from '../../src/features/lists';
 import { theme } from '../../src/theme';
 import { useAppContext } from '../../src/context/AppContext';
 import GlassView from '../../src/components/ui/GlassView';
@@ -42,6 +43,22 @@ export default function ListDetailScreen() {
   const currentList = lists.find(list => list.id === id);
   const isPinnedList = paramIsPinned === 'true' || currentList?.isPinned;
   const showPodium = isCurrentlyReadOnly && isPinnedList;
+
+  const {
+    isEditing: isListFormEditing,
+    title: listFormTitle,
+    setTitle: setListFormTitle,
+    color,
+    setColor,
+    filters,
+    setFilters,
+    isPinned,
+    setIsPinned,
+    formError: listFormError,
+    openEditModal: openListEditModal,
+    closeModals: closeListModals,
+    handleUpdateList,
+  } = useMovieLists();
 
   const {
     movies,
@@ -116,7 +133,13 @@ export default function ListDetailScreen() {
           <Typography variant="h3" style={styles.headerTitle} numberOfLines={1}>
             {Array.isArray(title) ? title[0] : (title || 'List Details')}
           </Typography>
-          <View style={styles.headerRight} />
+          <View style={styles.headerRight}>
+            {canEdit && isEditMode && currentList && (
+              <TouchableOpacity onPress={() => openListEditModal(currentList)} style={{ padding: 8 }}>
+                <Pencil color={theme.colors.text.primary} size={20} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
       </GlassView>
 
@@ -234,6 +257,27 @@ export default function ListDetailScreen() {
           />
         </Modal>
       )}
+
+      {/* Edit List Settings Modal */}
+      <ListFormModal
+        visible={isListFormEditing}
+        title="Edit List"
+        value={listFormTitle}
+        error={listFormError}
+        onChangeText={setListFormTitle}
+        onSubmit={async () => {
+          await handleUpdateList();
+          router.setParams({ title: listFormTitle });
+        }}
+        onCancel={closeListModals}
+        isEditing={true}
+        color={color}
+        setColor={setColor}
+        filters={filters}
+        setFilters={setFilters}
+        isPinned={isPinned}
+        setIsPinned={setIsPinned}
+      />
     </View>
   );
 }
