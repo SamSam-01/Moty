@@ -186,20 +186,6 @@ export default function ListDetailScreen() {
               </GlassView>
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.fabWrapper}
-              onPress={openCreateModal}
-              activeOpacity={0.8}
-            >
-              <LinearGradient
-                colors={[theme.colors.primary, theme.colors.secondary]}
-                style={styles.fabGradient}
-                start={{ x: 0, y: 0 }}
-                end={{ x: 1, y: 1 }}
-              >
-                <Plus color={theme.colors.white} size={28} />
-              </LinearGradient>
-            </TouchableOpacity>
           </View>
         )}
       </View>
