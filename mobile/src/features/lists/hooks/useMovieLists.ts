@@ -73,6 +73,7 @@ export function useMovieLists() {
     try {
       await updateList({
         ...currentList,
+        title: title.trim(),
         color,
         filters,
         isPinned,
