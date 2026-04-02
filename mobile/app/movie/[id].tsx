@@ -28,6 +28,7 @@ export default function MovieDetailScreen() {
 
     const [movie, setMovie] = useState<TMDBDetail | null>(null);
     const [personalNotes, setPersonalNotes] = useState<string | null>(null);
+    const [localReleaseDate, setLocalReleaseDate] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -46,15 +47,15 @@ export default function MovieDetailScreen() {
                 setMovie(response);
 
                 if (localId) {
-                    const { data, error: sbError } = await supabase
+                    const { data } = await supabase
                         .from('movies')
-                        .select('notes')
+                        .select('notes, release_date')
                         .eq('id', localId)
                         .single();
 
-                    if (data?.notes) {
-                        setPersonalNotes(data.notes);
-                    }
+                    if (data?.notes) setPersonalNotes(data.notes);
+                    // Use the local (regionally patched) release date if available
+                    if (data?.release_date) setLocalReleaseDate(data.release_date);
                 }
             } catch (err) {
                 console.error("Failed to fetch movie details", err);
@@ -115,7 +116,9 @@ export default function MovieDetailScreen() {
     }
 
     const backdropUri = movie.backdropUrl || movie.posterUrl;
-    const year = movie.releaseDate ? new Date(movie.releaseDate).getFullYear() : 'N/A';
+    // Prioritize locally stored release_date (already patched for user's region) over TMDB global date
+    const displayReleaseDate = localReleaseDate || movie.releaseDate;
+    const year = displayReleaseDate ? new Date(displayReleaseDate).getFullYear() : 'N/A';
     const rating = movie.voteAverage ? movie.voteAverage.toFixed(1) : 'N/A';
 
     return (
