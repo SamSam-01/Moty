@@ -12,12 +12,12 @@ import { supabase } from '../../src/lib/supabase';
 const { width, height } = Dimensions.get('window');
 
 // API TMDB type fallback if properties are deeply nested
-type TMDBDetail = any; 
+type TMDBDetail = any;
 
 export default function MovieDetailScreen() {
     // id is tmdbId
     const { id, localId, listId } = useLocalSearchParams<{ id: string; localId?: string; listId?: string }>();
-    
+
     const [movie, setMovie] = useState<TMDBDetail | null>(null);
     const [personalNotes, setPersonalNotes] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true);
@@ -37,7 +37,7 @@ export default function MovieDetailScreen() {
                         .select('notes')
                         .eq('id', localId)
                         .single();
-                        
+
                     if (data?.notes) {
                         setPersonalNotes(data.notes);
                     }
@@ -100,18 +100,25 @@ export default function MovieDetailScreen() {
                 style={StyleSheet.absoluteFill}
             />
 
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
+            <ScrollView bounces={false} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 60 }}>
                 {/* Header Banner */}
                 <View style={styles.bannerContainer}>
-                    {backdropUri ? (
-                        <Image source={{ uri: backdropUri }} style={styles.bannerImage} resizeMode="cover" />
-                    ) : (
-                        <View style={[styles.bannerImage, { backgroundColor: theme.colors.surface }]} />
-                    )}
-                    <LinearGradient
-                        colors={['rgba(0,0,0,0.5)', 'transparent', theme.colors.background]}
-                        style={StyleSheet.absoluteFill}
-                    />
+                    {/* pointerEvents="none" ensures image/gradient don't eat scroll gestures */}
+                    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+                        {backdropUri ? (
+                            <Image
+                                source={{ uri: backdropUri }}
+                                style={StyleSheet.absoluteFill}
+                                resizeMode="cover"
+                            />
+                        ) : (
+                            <View style={[StyleSheet.absoluteFill, { backgroundColor: theme.colors.surface }]} />
+                        )}
+                        <LinearGradient
+                            colors={['rgba(0,0,0,0.5)', 'transparent', theme.colors.background]}
+                            style={StyleSheet.absoluteFill}
+                        />
+                    </View>
 
                     {/* Back Button */}
                     <TouchableOpacity
@@ -127,7 +134,7 @@ export default function MovieDetailScreen() {
                     {/* Meta overlay at the bottom of the banner */}
                     <View style={styles.bannerMeta}>
                         <Typography variant="h1" style={styles.movieTitle}>{movie.title}</Typography>
-                        
+
                         <View style={styles.metaRow}>
                             <View style={styles.metaPill}>
                                 <Calendar color={theme.colors.primary} size={14} />
@@ -149,7 +156,7 @@ export default function MovieDetailScreen() {
 
                 {/* Main Content */}
                 <View style={styles.content}>
-                    
+
                     {/* Personal Notes (if loaded via local DB) */}
                     {personalNotes && personalNotes !== movie.overview && (
                         <GlassView intensity={15} style={styles.notesContainer}>
